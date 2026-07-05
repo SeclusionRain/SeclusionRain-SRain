@@ -100,7 +100,7 @@ SHOW DATABASES;
 conda activate ML_DouYin_Comments_SentimentAnalysis_env
 
 # 进入项目目录
-cd D:\BSXM\main
+cd  ../main
 
 # 运行项目（自动创建表）
 python run.py
@@ -161,7 +161,7 @@ print(cursor.fetchall())
 conda activate ML_DouYin_Comments_SentimentAnalysis_env
 
 # 2. 进入项目目录
-cd D:\BSXM\main
+cd ../main
 
 # 3. 启动 Flask 应用
 python run.py
@@ -229,7 +229,7 @@ FLUSH PRIVILEGES;
 问题：AI 功能调用失败
 
 # 检查 API Key 是否有效
-# 打开 D:\BSXM\main\utils\GLM_AI.py
+# 打开 main\utils\GLM_AI.py
 # 确认 api_key 参数与AI型号是否正确
 
 # 验证网络连接
@@ -267,7 +267,7 @@ conda create -n ML_DouYin_Comments_SentimentAnalysis_env python=3.10 -y
 conda activate ML_DouYin_Comments_SentimentAnalysis_env
 
 # ========== 3. 安装依赖 ==========
-cd D:\BSXM\main
+cd ../main
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 
