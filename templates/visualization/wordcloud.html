@@ -1,0 +1,299 @@
+{% extends "base.html" %}
+
+{% block title %}关键词词云分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- 页面标题和返回按钮 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in-up">
+        <div>
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 flex items-center">
+                <i class="fas fa-cloud text-primary mr-3"></i>关键词词云分析
+            </h2>
+            <p class="text-gray-500 mt-2">探索评论中的高频词汇，发现用户关注点</p>
+        </div>
+        <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" 
+           class="mt-4 md:mt-0 inline-flex items-center bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg">
+            <i class="fas fa-arrow-left mr-2"></i>返回仪表板
+        </a>
+    </div>
+
+    <!-- 词云切换选项 -->
+    <div class="bg-white rounded-xl shadow-card p-6 mb-8 animate-fade-in-up" style="animation-delay: 100ms;">
+        <div class="flex flex-wrap gap-4 justify-center">
+            <!-- 自定义单选按钮组 -->
+            <div class="relative">
+                <input type="radio" class="sr-only peer" name="wordcloudType" id="allWords" value="all" checked>
+                <label for="allWords" class="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-primary text-primary bg-white hover:bg-primary/5 cursor-pointer transition-all duration-300 peer-checked:bg-primary peer-checked:text-white">
+                    <i class="fas fa-globe mr-2"></i>总体词云
+                </label>
+            </div>
+
+            <div class="relative">
+                <input type="radio" class="sr-only peer" name="wordcloudType" id="positiveWords" value="positive">
+                <label for="positiveWords" class="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-success text-success bg-white hover:bg-success/5 cursor-pointer transition-all duration-300 peer-checked:bg-success peer-checked:text-white">
+                    <i class="fas fa-smile mr-2"></i>积极词云
+                </label>
+            </div>
+
+            <div class="relative">
+                <input type="radio" class="sr-only peer" name="wordcloudType" id="negativeWords" value="negative">
+                <label for="negativeWords" class="inline-flex items-center justify-center px-6 py-3 rounded-lg border-2 border-danger text-danger bg-white hover:bg-danger/5 cursor-pointer transition-all duration-300 peer-checked:bg-danger peer-checked:text-white">
+                    <i class="fas fa-frown mr-2"></i>消极词云
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 词云展示区域 (占 2/3 宽度) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-card overflow-hidden animate-fade-in-up" style="animation-delay: 200ms;">
+            <div class="bg-gradient-primary text-white p-5">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold flex items-center" id="wordcloudTitle">
+                        <i class="fas fa-cloud mr-2"></i>总体高频词云
+                    </h5>
+                    <button id="exportWordcloudBtn" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm flex items-center">
+                        <i class="fas fa-download mr-2"></i>导出图片
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="wordcloudChart" class="w-full" style="height: 500px;"></div>
+            </div>
+        </div>
+
+        <!-- 右侧区域 (占1/3宽度) -->
+        <div class="space-y-8">
+            <!-- 词频统计 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden animate-fade-in-up" style="animation-delay: 300ms;">
+                <div class="bg-gradient-info text-white p-4">
+                    <h6 class="font-semibold flex items-center">
+                        <i class="fas fa-list-ol mr-2"></i>高频词排行
+                    </h6>
+                </div>
+                <div class="p-4">
+                    <div id="wordRankChart" class="w-full" style="height: 300px;"></div>
+                </div>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden animate-fade-in-up" style="animation-delay: 400ms;">
+                <div class="bg-gradient-secondary text-white p-4">
+                    <h6 class="font-semibold flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>统计信息
+                    </h6>
+                </div>
+                <div class="p-5 space-y-4">
+                    <!-- 评论总数 -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 transform transition-all duration-300 hover:border-primary hover:shadow-sm">
+                        <div class="text-center">
+                            <h4 class="text-2xl font-bold text-primary mb-1" id="totalComments">-</h4>
+                            <p class="text-sm text-gray-600">评论总数</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 独特词汇 -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 transform transition-all duration-300 hover:border-info hover:shadow-sm">
+                        <div class="text-center">
+                            <h4 class="text-2xl font-bold text-info mb-1" id="uniqueWords">-</h4>
+                            <p class="text-sm text-gray-600">独特词汇</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 最高频词 -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100 transform transition-all duration-300 hover:border-success hover:shadow-sm">
+                        <div class="text-center">
+                            <h4 class="text-2xl font-bold text-success mb-1" id="topWord">-</h4>
+                            <p class="text-sm text-gray-600">最高频词</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const historyId = {{ history.id }};
+    let wordcloudChart = echarts.init(document.getElementById('wordcloudChart'));
+    let wordRankChart = echarts.init(document.getElementById('wordRankChart'));
+    
+    // 加载词云数据
+    function loadWordcloud(sentiment = 'all') {
+        const url = `/visualization/api/word_frequency/${historyId}?sentiment=${sentiment}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // 更新标题
+                const titles = {
+                    'all': '总体高频词云',
+                    'positive': '积极情感词云',
+                    'negative': '消极情感词云'
+                };
+                document.getElementById('wordcloudTitle').innerHTML = 
+                    `<i class="fas fa-cloud me-2"></i>${titles[sentiment]}`;
+                
+                // 更新统计信息
+                document.getElementById('totalComments').textContent = data.total_comments;
+                document.getElementById('uniqueWords').textContent = data.words.length;
+                document.getElementById('topWord').textContent = 
+                    data.words.length > 0 ? data.words[0].name : '-';
+                
+                // 词云图配置
+                const wordcloudOption = {
+                    tooltip: {
+                        formatter: function(params) {
+                            return `${params.name}: ${params.value}次`;
+                        }
+                    },
+                    series: [{
+                        type: 'wordCloud',
+                        gridSize: 2,
+                        sizeRange: [12, 50],
+                        rotationRange: [-90, 90],
+                        shape: 'pentagon',
+                        width: '100%',
+                        height: '100%',
+                        drawOutOfBound: true,
+                        textStyle: {
+                            fontFamily: 'sans-serif',
+                            fontWeight: 'bold',
+                            color: function () {
+                                const colors = sentiment === 'positive' ? 
+                                    ['#28a745', '#20c997', '#17a2b8', '#007bff'] :
+                                    sentiment === 'negative' ?
+                                    ['#dc3545', '#fd7e14', '#e83e8c', '#6f42c1'] :
+                                    ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8'];
+                                return colors[Math.round(Math.random() * (colors.length - 1))];
+                            }
+                        },
+                        emphasis: {
+                            textStyle: {
+                                shadowBlur: 10,
+                                shadowColor: '#333'
+                            }
+                        },
+                        data: data.words
+                    }]
+                };
+                
+                wordcloudChart.setOption(wordcloudOption);
+                
+                // 词频排行图
+                const top10Words = data.words.slice(0, 10);
+                const rankOption = {
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'shadow'
+                        }
+                    },
+                    xAxis: {
+                        type: 'value',
+                        show: false
+                    },
+                    yAxis: {
+                        type: 'category',
+                        data: top10Words.map(item => item.name).reverse(),
+                        axisLabel: {
+                            fontSize: 12
+                        }
+                    },
+                    series: [{
+                        type: 'bar',
+                        data: top10Words.map(item => item.value).reverse(),
+                        itemStyle: {
+                            color: sentiment === 'positive' ? '#28a745' :
+                                   sentiment === 'negative' ? '#dc3545' : '#007bff'
+                        },
+                        label: {
+                            show: true,
+                            position: 'right',
+                            formatter: '{c}'
+                        }
+                    }]
+                };
+                
+                wordRankChart.setOption(rankOption);
+            })
+            .catch(error => {
+                console.error('加载词云数据失败:', error);
+            });
+    }
+    
+    // 初始加载
+    loadWordcloud();
+    
+    // 词云类型切换事件
+    document.querySelectorAll('input[name="wordcloudType"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.checked) {
+                loadWordcloud(this.value);
+            }
+        });
+    });
+    
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        wordcloudChart.resize();
+        wordRankChart.resize();
+    });
+    
+    // 导出词云图片
+    document.getElementById('exportWordcloudBtn').addEventListener('click', function() {
+        try {
+            // 使用 ECharts 自带的导出功能
+            const chartImg = wordcloudChart.getDataURL({
+                type: 'png',
+                pixelRatio: 2,
+                backgroundColor: '#fff'
+            });
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.download = `词云分析_${new Date().getTime()}.png`;
+            link.href = chartImg;
+            link.click();
+            
+            // 显示成功提示
+            showToast('图片导出成功！', 'success');
+        } catch (error) {
+            console.error('导出失败:', error);
+            showToast('导出失败，请重试', 'error');
+        }
+    });
+    
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 translate-y-[-100%] opacity-0`;
+        toast.style.backgroundColor = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff';
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // 显示动画
+        setTimeout(() => {
+            toast.classList.remove('translate-y-[-100%]', 'opacity-0');
+        }, 10);
+        
+        // 3 秒后隐藏
+        setTimeout(() => {
+            toast.classList.add('translate-y-[-100%]', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

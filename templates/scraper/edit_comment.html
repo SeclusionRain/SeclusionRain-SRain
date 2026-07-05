@@ -1,0 +1,699 @@
+{% extends "base.html" %}
+
+{% block title %}编辑评论 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+/* 自定义CSS样式 */
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --success-gradient: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+    --warning-gradient: linear-gradient(135deg, #f7b731 0%, #fc4a1a 100%);
+    --danger-gradient: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+    --card-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    --hover-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+    --transition: all 0.3s ease;
+    --form-focus: 0 0 0 3px rgba(102, 126, 234, 0.25);
+}
+
+/* 页面容器 */
+.page-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* 头部样式 */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-flex;
+    align-items: center;
+}
+
+.page-title i {
+    margin-right: 0.8rem;
+}
+
+/* 返回按钮样式 */
+.back-btn {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* 表单卡片样式 */
+.form-card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--transition);
+    background-color: white;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+}
+
+.form-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+}
+
+.form-card .card-header {
+    border-radius: 16px 16px 0 0;
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 600;
+    padding: 1.2rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.form-card .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 0;
+}
+
+.form-card .card-header h5 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.form-card .card-body {
+    padding: 2rem;
+}
+
+/* 表单组样式 */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+.form-group.required label::after {
+    content: '*';
+    color: #e53935;
+    margin-left: 0.3rem;
+}
+
+/* 输入框样式 */
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: white;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: var(--form-focus);
+    transform: translateY(-1px);
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+    background-color: #f8f9fa;
+    border-color: #d0d0d0;
+    color: #666;
+    cursor: not-allowed;
+}
+
+/* 文本域样式 */
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* 选择框样式 */
+.form-select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: var(--transition);
+    background-color: white;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+    padding-right: 3rem;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: var(--form-focus);
+    transform: translateY(-1px);
+}
+
+/* 按钮组样式 */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* 操作按钮样式 */
+.action-btn {
+    transition: var(--transition);
+    border-radius: 10px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.action-cancel {
+    background: #f8f9fa;
+    color: #666;
+    border: 2px solid #e0e0e0;
+}
+
+.action-cancel:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.action-save {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.action-save:hover {
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    color: white;
+}
+
+/* 危险操作卡片样式 */
+.danger-card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: var(--transition);
+    background-color: white;
+    box-shadow: var(--card-shadow);
+    border: 2px solid rgba(229, 57, 53, 0.2);
+}
+
+.danger-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--hover-shadow);
+}
+
+.danger-card .card-header {
+    border-radius: 16px 16px 0 0;
+    background: var(--danger-gradient);
+    color: white;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.danger-card .card-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    z-index: 0;
+}
+
+.danger-card .card-header h6 {
+    position: relative;
+    z-index: 1;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+}
+
+.danger-card .card-header i {
+    margin-right: 0.5rem;
+}
+
+.danger-card .card-body {
+    padding: 1.5rem;
+}
+
+/* 危险按钮样式 */
+.danger-btn {
+    transition: var(--transition);
+    border-radius: 10px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: 2px solid rgba(229, 57, 53, 0.5);
+    background: white;
+    color: #e53935;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.danger-btn:hover {
+    background: var(--danger-gradient);
+    color: white;
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(229, 57, 53, 0.3);
+}
+
+/* 表单文本 */
+.form-text {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    color: #666;
+}
+
+/* 信息文本 */
+.info-text {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+}
+
+.info-text i {
+    margin-right: 0.5rem;
+    color: #667eea;
+}
+
+/* 字符计数器 */
+.char-counter {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+    font-weight: 500;
+}
+
+.char-counter.warning {
+    color: #f7b731;
+}
+
+.char-counter.danger {
+    color: #e53935;
+}
+
+/* 表单网格布局 */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+/* 卡片加载动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.fade-in-up.delay-1 {
+    animation-delay: 0.1s;
+}
+
+.fade-in-up.delay-2 {
+    animation-delay: 0.2s;
+}
+
+/* 表单输入验证效果 */
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.input-wrapper.valid::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300b09b' stroke='%2300b09b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+    opacity: 1;
+}
+
+.input-wrapper.invalid::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e53935' stroke='%23e53935' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E");
+    opacity: 1;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+</style>
+
+<div class="page-container">
+    <div class="page-header">
+        <h2 class="page-title">
+            <i class="fas fa-edit me-2"></i>编辑评论
+        </h2>
+        <a href="{{ url_for('scraper.view_task', task_id=comment.task_id) }}" class="back-btn">
+            <i class="fas fa-arrow-left me-2"></i>返回任务
+        </a>
+    </div>
+
+    <!-- 评论编辑表单卡片 -->
+    <div class="form-card fade-in-up">
+        <div class="card-header">
+            <h5>评论信息</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" id="editCommentForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-user me-1"></i>用户名
+                        </label>
+                        <input type="text" class="form-control" value="{{ comment.user_name }}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-id-card me-1"></i>用户ID
+                        </label>
+                        <input type="text" class="form-control" value="{{ comment.user_id }}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-clock me-1"></i>发布时间
+                        </label>
+                        <input type="text" class="form-control" 
+                               value="{{ comment.publish_time.strftime('%Y-%m-%d %H:%M:%S') if comment.publish_time else '未知' }}" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-thumbs-up me-1"></i>点赞数
+                        </label>
+                        <input type="number" class="form-control" name="like_count" 
+                               value="{{ comment.like_count or 0 }}" min="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-map-marker-alt me-1"></i>IP位置
+                        </label>
+                        <input type="text" class="form-control" name="ip_location" 
+                               value="{{ comment.ip_location or '' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-heart me-1"></i>情感标签
+                        </label>
+                        <select class="form-select" name="sentiment_label">
+                            <option value="">未分析</option>
+                            <option value="positive" {{ 'selected' if comment.sentiment_label == 'positive' }}>正面</option>
+                            <option value="negative" {{ 'selected' if comment.sentiment_label == 'negative' }}>负面</option>
+                            <option value="neutral" {{ 'selected' if comment.sentiment_label == 'neutral' }}>中性</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group required" style="margin-top: 1.5rem;">
+                    <label>
+                        <i class="fas fa-comment me-1"></i>评论内容
+                    </label>
+                    <div style="position: relative;">
+                        <textarea class="form-control" name="content" rows="6" required>{{ comment.content }}</textarea>
+                        <div class="char-counter" id="contentCounter">0 字符</div>
+                    </div>
+                    <div class="form-text">评论内容不能为空</div>
+                </div>
+                
+                
+                {% if comment.sentiment_score %}
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-chart-line me-1"></i>情感得分
+                    </label>
+                    <input type="number" class="form-control" name="sentiment_score" 
+                           step="0.01" min="-1" max="1" value="{{ comment.sentiment_score }}">
+                    <div class="form-text">范围: -1.0 (最负面) 到 1.0 (最正面)</div>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between items-center mt-4">
+                    <div class="info-text">
+                        <i class="fas fa-info-circle me-1"></i>
+                        评论ID: {{ comment.id }} | 任务ID: {{ comment.task_id }}
+                    </div>
+                    <div class="button-group">
+                        <a href="{{ url_for('scraper.view_task', task_id=comment.task_id) }}" 
+                           class="action-btn action-cancel">取消</a>
+                        <button type="submit" class="action-btn action-save">
+                            <i class="fas fa-save me-1"></i>保存修改
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 危险操作区域 -->
+    <div class="danger-card fade-in-up delay-1">
+        <div class="card-header">
+            <h6>
+                <i class="fas fa-exclamation-triangle me-2"></i>危险操作
+            </h6>
+        </div>
+        <div class="card-body">
+            <p class="text-muted mb-4">删除评论后将无法恢复，请谨慎操作。</p>
+            <form method="POST" action="{{ url_for('scraper.delete_comment', post_id=comment.post_id) }}" 
+                  onsubmit="return confirm('确定要删除这条评论吗？此操作无法撤销！')">
+                <button type="submit" class="danger-btn">
+                    <i class="fas fa-trash me-1"></i>删除评论
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 字符计数
+    const contentTextarea = document.querySelector('textarea[name="content"]');
+    const charCounter = document.getElementById('contentCounter');
+    
+    function updateCharCount() {
+        const count = contentTextarea.value.length;
+        charCounter.textContent = `${count} 字符`;
+        
+        // 移除所有状态类
+        charCounter.classList.remove('warning', 'danger');
+        
+        // 添加状态类
+        if (count > 1000) {
+            charCounter.classList.add('danger');
+        } else if (count > 500) {
+            charCounter.classList.add('warning');
+        }
+        
+        // 添加输入验证效果
+        const inputWrapper = contentTextarea.parentElement;
+        inputWrapper.classList.remove('valid', 'invalid');
+        
+        if (count > 0) {
+            inputWrapper.classList.add('valid');
+        }
+    }
+    
+    // 初始更新字符计数
+    updateCharCount();
+    
+    // 输入时更新字符计数
+    contentTextarea.addEventListener('input', function() {
+        updateCharCount();
+        
+        // 添加输入动画效果
+        this.style.transform = 'scale(1.01)';
+        setTimeout(() => {
+            this.style.transform = 'scale(1)';
+        }, 150);
+    });
+    
+    // 表单验证
+    const form = document.getElementById('editCommentForm');
+    form.addEventListener('submit', function(e) {
+        const content = contentTextarea.value.trim();
+        
+        if (!content) {
+            e.preventDefault();
+            
+            // 添加错误动画
+            contentTextarea.parentElement.classList.add('invalid');
+            contentTextarea.style.borderColor = '#e53935';
+            
+            // 错误提示动画
+            const errorToast = document.createElement('div');
+            errorToast.style.position = 'fixed';
+            errorToast.style.top = '20px';
+            errorToast.style.right = '20px';
+            errorToast.style.background = 'var(--danger-gradient)';
+            errorToast.style.color = 'white';
+            errorToast.style.padding = '1rem 1.5rem';
+            errorToast.style.borderRadius = '10px';
+            errorToast.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
+            errorToast.style.zIndex = '9999';
+            errorToast.style.opacity = '0';
+            errorToast.style.transform = 'translateY(-20px)';
+            errorToast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            errorToast.textContent = '评论内容不能为空';
+            document.body.appendChild(errorToast);
+            
+            // 显示错误提示
+            setTimeout(() => {
+                errorToast.style.opacity = '1';
+                errorToast.style.transform = 'translateY(0)';
+            }, 10);
+            
+            // 3秒后隐藏错误提示
+            setTimeout(() => {
+                errorToast.style.opacity = '0';
+                errorToast.style.transform = 'translateY(-20px)';
+                setTimeout(() => {
+                    document.body.removeChild(errorToast);
+                }, 300);
+            }, 3000);
+            
+            // 聚焦到内容输入框
+            contentTextarea.focus();
+        }
+    });
+    
+    // 页面加载动画
+    const animatedElements = document.querySelectorAll('.fade-in-up');
+    animatedElements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    });
+    
+    // 检查元素是否在视口中
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    // 观察所有动画元素
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

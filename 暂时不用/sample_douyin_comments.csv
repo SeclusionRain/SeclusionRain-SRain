@@ -1,0 +1,16 @@
+user_id,comment,sentiment,score
+user_001,这个视频太好笑了哈哈哈,positive,0.85
+user_002,内容很棒，学到了很多,positive,0.92
+user_003,音质不太好，听不清楚,negative,0.25
+user_004,非常有用的教程，感谢分享,positive,0.88
+user_005,视频太长了，有点无聊,negative,0.35
+user_006,画质很清晰，制作精良,positive,0.78
+user_007,这个up主的内容一直很优质,positive,0.95
+user_008,没什么新意，看过类似的,neutral,0.45
+user_009,解释得很详细，容易理解,positive,0.82
+user_010,希望能出更多这样的内容,positive,0.75
+user_011,评论区好热闹啊,neutral,0.55
+user_012,这个方法真的有效吗？,neutral,0.50
+user_013,太棒了！收藏了,positive,0.90
+user_014,不太适合新手,negative,0.30
+user_015,期待下一期视频,positive,0.70

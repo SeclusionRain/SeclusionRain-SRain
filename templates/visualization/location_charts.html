@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+
+{% block title %}地域情感分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-6">
+    <!-- 页面标题和返回按钮 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+            <i class="fas fa-map-marker-alt text-red-500 me-2"></i>地域情感倾向分析
+        </h2>
+        <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" 
+           class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-all duration-300 flex items-center shadow-sm hover:shadow">
+            <i class="fas fa-arrow-left mr-1"></i>返回仪表板
+        </a>
+    </div>
+
+    <!-- 图表区域 - 使用 Tailwind 的 grid 布局 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- 1. 地域分布地图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-right">
+            <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-map me-2"></i>地域评论分布
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="locationMapChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="locationMapChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 2. 地域排行榜 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-left">
+            <div class="bg-gradient-to-r from-blue-400 to-blue-500 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-chart-bar me-2"></i>地域评论排行榜
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="locationRankChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="locationRankChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 3. 地域情感热力图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-right">
+            <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-fire me-2"></i>地域情感热力图
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="locationHeatmapChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="locationHeatmapChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 4. 地域情感比例饼图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-left">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-chart-pie me-2"></i>主要地域情感比例
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="locationPieChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="locationPieChart" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 地域分析洞察 -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h5 class="text-gray-800 font-semibold flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 me-2"></i>地域分析洞察
+            </h5>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="locationInsightCards">
+                <!-- 动态生成洞察卡片 -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const historyId = {{ history.id }};
+    
+    // 初始化图表
+    const locationMapChart = echarts.init(document.getElementById('locationMapChart'));
+    const locationRankChart = echarts.init(document.getElementById('locationRankChart'));
+    const locationHeatmapChart = echarts.init(document.getElementById('locationHeatmapChart'));
+    const locationPieChart = echarts.init(document.getElementById('locationPieChart'));
+    
+    // 加载地域情感数据
+    fetch(`/visualization/api/location_sentiment/${historyId}`)
+        .then(response => response.json())
+        .then(data => {
+            const locationStats = data.location_stats;
+            const chartData = data.chart_data;
+            const heatmapData = data.heatmap_data;
+            
+            // 1. 地域分布散点图（模拟地图）
+            const mapData = Object.keys(locationStats).map((location, index) => {
+                const stats = locationStats[location];
+                return {
+                    name: location,
+                    value: [
+                        Math.random() * 100, // 模拟经度
+                        Math.random() * 100, // 模拟纬度
+                        stats.total
+                    ],
+                    itemStyle: {
+                        color: stats.positive > stats.negative ? '#28a745' : '#dc3545'
+                    }
+                };
+            });
+            
+            const mapOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        const location = params.name;
+                        const stats = locationStats[location];
+                        return `地区: ${location}<br/>总评论: ${stats.total}<br/>正面: ${stats.positive}<br/>负面: ${stats.negative}`;
+                    }
+                },
+                xAxis: {
+                    type: 'value',
+                    show: false,
+                    min: 0,
+                    max: 100
+                },
+                yAxis: {
+                    type: 'value',
+                    show: false,
+                    min: 0,
+                    max: 100
+                },
+                series: [{
+                    type: 'scatter',
+                    data: mapData,
+                    symbolSize: function(data) {
+                        return Math.sqrt(data[2]) * 3 + 10;
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            locationMapChart.setOption(mapOption);
+            
+            // 2. 地域排行榜
+            const sortedLocations = Object.entries(locationStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .slice(0, 10);
+            
+            const rankOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['正面评论', '负面评论']
+                },
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: sortedLocations.map(item => item[0]).reverse(),
+                    axisLabel: {
+                        fontSize: 12
+                    }
+                },
+                series: [
+                    {
+                        name: '正面评论',
+                        type: 'bar',
+                        stack: '总量',
+                        data: sortedLocations.map(item => item[1].positive).reverse(),
+                        itemStyle: { color: '#28a745' }
+                    },
+                    {
+                        name: '负面评论',
+                        type: 'bar',
+                        stack: '总量',
+                        data: sortedLocations.map(item => item[1].negative).reverse(),
+                        itemStyle: { color: '#dc3545' }
+                    }
+                ]
+            };
+            locationRankChart.setOption(rankOption);
+            
+            // 3. 热力图
+            const locations = Object.keys(locationStats);
+            const cols = 8; // 每行显示的列数
+            const rows = Math.max(1, Math.ceil(locations.length / cols));
+            const xCategories = Array.from({ length: cols }, (_, i) => i);
+            const yCategories = Array.from({ length: rows }, (_, i) => i);
+
+            const heatmapChartData = locations.map((location, index) => {
+                const stats = locationStats[location];
+                const positiveRate = stats.total > 0 ? (stats.positive / stats.total) : 0.5;
+                const xIdx = index % cols;
+                const yIdx = Math.floor(index / cols);
+                return [xIdx, yIdx, positiveRate * 100, location, stats.total]; // 转换为百分比
+            });
+
+            const heatmapOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        const data = params.data;
+                        return `地区: ${data[3]}<br/>正面率: ${data[2].toFixed(1)}%<br/>总评论: ${data[4]}`;
+                    }
+                },
+                grid: {
+                    top: 40,
+                    left: 10,
+                    right: 10,
+                    bottom: 60,
+                    containLabel: false
+                },
+                visualMap: {
+                    min: 0,
+                    max: 100,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    inRange: {
+                        color: ['#dc3545', '#ffc107', '#28a745']
+                    },
+                    text: ['高评论', '低评论'],
+                    formatter: function(value) {
+                        return value.toFixed(0) ;
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: xCategories,
+                    axisTick: { show: false },
+                    axisLabel: { show: false },
+                    splitArea: { show: true },
+                    splitLine: { show: false }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: yCategories,
+                    axisTick: { show: false },
+                    axisLabel: { show: false },
+                    splitArea: { show: true },
+                    splitLine: { show: false }
+                },
+                series: [{
+                    name: '地域情感热力',
+                    type: 'heatmap',
+                    data: heatmapChartData,
+                    label: {
+                        show: true,
+                        formatter: function(params) {
+                            return params.data[3];
+                        },
+                        fontSize: 10
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            locationHeatmapChart.setOption(heatmapOption);
+            
+            // 4. 主要地域情感比例饼图
+            const topLocations = Object.entries(locationStats)
+                .sort((a, b) => b[1].total - a[1].total)
+                .slice(0, 6);
+            
+            const pieData = topLocations.map(([location, stats]) => ({
+                name: location,
+                value: stats.total,
+                itemStyle: {
+                    color: stats.positive > stats.negative ? 
+                        `rgba(40, 167, 69, ${0.6 + (stats.positive / stats.total) * 0.4})` :
+                        `rgba(220, 53, 69, ${0.6 + (stats.negative / stats.total) * 0.4})`
+                }
+            }));
+            
+            const pieOption = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: function(params) {
+                        const location = params.name;
+                        const stats = locationStats[location];
+                        const positiveRate = (stats.positive / stats.total * 100).toFixed(1);
+                        return `${location}<br/>总评论: ${stats.total}<br/>正面率: ${positiveRate}%`;
+                    }
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                    textStyle: {
+                        fontSize: 12
+                    }
+                },
+                series: [{
+                    name: '地域分布',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    center: ['60%', '50%'],
+                    data: pieData,
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    },
+                    label: {
+                        formatter: '{b}\n{d}%'
+                    }
+                }]
+            };
+            locationPieChart.setOption(pieOption);
+            
+            // 生成地域分析洞察
+            generateLocationInsights(locationStats);
+        })
+        .catch(error => {
+            console.error('加载地域数据失败:', error);
+        });
+    
+    // 生成地域分析洞察
+    function generateLocationInsights(locationStats) {
+        const insights = [];
+        
+        // 最活跃地区
+        const sortedByTotal = Object.entries(locationStats)
+            .sort((a, b) => b[1].total - a[1].total);
+        
+        if (sortedByTotal.length > 0) {
+            const [mostActiveLocation, mostActiveStats] = sortedByTotal[0];
+            insights.push({
+                icon: 'fas fa-fire',
+                color: 'primary',
+                title: '最活跃地区',
+                content: `${mostActiveLocation}是评论最多的地区，共有${mostActiveStats.total}条评论`
+            });
+        }
+        
+        // 最正面地区
+        const locationsWithEnoughData = Object.entries(locationStats)
+            .filter(([_, stats]) => stats.total >= 3);
+        
+        if (locationsWithEnoughData.length > 0) {
+            const sortedByPositiveRate = locationsWithEnoughData
+                .sort((a, b) => (b[1].positive / b[1].total) - (a[1].positive / a[1].total));
+            
+            const [mostPositiveLocation, mostPositiveStats] = sortedByPositiveRate[0];
+            const positiveRate = (mostPositiveStats.positive / mostPositiveStats.total * 100).toFixed(1);
+            
+            insights.push({
+                icon: 'fas fa-smile',
+                color: 'success',
+                title: '最正面地区',
+                content: `${mostPositiveLocation}的正面率最高，达到${positiveRate}%`
+            });
+        }
+        
+        // 地域覆盖范围
+        const totalLocations = Object.keys(locationStats).length;
+        insights.push({
+            icon: 'fas fa-globe',
+            color: 'info',
+            title: '地域覆盖',
+            content: `评论覆盖了${totalLocations}个不同地区，显示了广泛的地域分布`
+        });
+        
+        // 地域差异分析
+        if (locationsWithEnoughData.length >= 2) {
+            const positiveRates = locationsWithEnoughData.map(([_, stats]) => 
+                stats.positive / stats.total * 100
+            );
+            const maxRate = Math.max(...positiveRates);
+            const minRate = Math.min(...positiveRates);
+            const difference = maxRate - minRate;
+            
+            if (difference > 20) {
+                insights.push({
+                    icon: 'fas fa-chart-line',
+                    color: 'warning',
+                    title: '地域差异显著',
+                    content: `不同地区的情感倾向差异较大，最大相差${difference.toFixed(1)}个百分点`
+                });
+            } else {
+                insights.push({
+                    icon: 'fas fa-balance-scale',
+                    color: 'secondary',
+                    title: '地域情感均衡',
+                    content: `各地区情感倾向相对均衡，差异在${difference.toFixed(1)}个百分点内`
+                });
+            }
+        }
+        
+        // 渲染洞察卡片 - 使用Tailwind CSS样式
+        const insightCards = document.getElementById('locationInsightCards');
+        insightCards.innerHTML = insights.map((insight, index) => {
+            // 映射Bootstrap颜色到Tailwind颜色
+            const colorMap = {
+                'primary': 'indigo',
+                'success': 'green',
+                'info': 'blue',
+                'warning': 'yellow',
+                'secondary': 'gray'
+            };
+            const tailwindColor = colorMap[insight.color] || 'blue';
+            
+            // 为每个卡片添加不同的动画延迟
+            const animationDelay = `${index * 150}ms`;
+            
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4 border-l-4" 
+                     style="border-color: var(--tw-color-${tailwindColor}-500); 
+                            animation: fadeInUp 0.5s ease-out forwards; 
+                            animation-delay: ${animationDelay}; 
+                            opacity: 0;">
+                    <div class="flex flex-col items-center text-center">
+                        <i class="${insight.icon} text-2xl mb-2" 
+                           style="color: var(--tw-color-${tailwindColor}-500);"></i>
+                        <h6 class="font-semibold mb-1 text-gray-800">${insight.title}</h6>
+                        <p class="text-sm text-gray-600">${insight.content}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        locationMapChart.resize();
+        locationRankChart.resize();
+        locationHeatmapChart.resize();
+        locationPieChart.resize();
+    });
+    
+    // 导出图表功能
+    document.querySelectorAll('.export-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const chartName = this.getAttribute('data-chart');
+            let chart;
+            
+            switch(chartName) {
+                case 'locationMapChart':
+                    chart = locationMapChart;
+                    break;
+                case 'locationRankChart':
+                    chart = locationRankChart;
+                    break;
+                case 'locationHeatmapChart':
+                    chart = locationHeatmapChart;
+                    break;
+                case 'locationPieChart':
+                    chart = locationPieChart;
+                    break;
+            }
+            
+            if (chart) {
+                try {
+                    const chartImg = chart.getDataURL({
+                        type: 'png',
+                        pixelRatio: 2,
+                        backgroundColor: '#fff'
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `地域分析_${chartName}_${new Date().getTime()}.png`;
+                    link.href = chartImg;
+                    link.click();
+                    
+                    showToast('图片导出成功！', 'success');
+                } catch (error) {
+                    console.error('导出失败:', error);
+                    showToast('导出失败，请重试', 'error');
+                }
+            }
+        });
+    });
+    
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 translate-y-[-100%] opacity-0`;
+        const colors = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'info': '#007bff'
+        };
+        toast.style.backgroundColor = colors[type] || colors['info'];
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.remove('translate-y-[-100%]', 'opacity-0');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.add('translate-y-[-100%]', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

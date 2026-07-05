@@ -1,0 +1,302 @@
+{% extends "base.html" %}
+
+{% block head %}
+<!-- Tailwind CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<style>
+/* 自定义样式 */
+.fade-in-up {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* 自定义颜色 */
+:root {
+    --primary: #3b82f6;
+}
+
+.focus:ring-primary {
+    --tw-ring-color: var(--primary);
+}
+
+.focus:border-primary {
+    border-color: var(--primary);
+}</style>
+{% endblock %}
+
+{% block title %}查看任务 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+
+<div class="flex justify-between items-center mb-8">
+    <h2 class="text-2xl font-bold text-blue-600 flex items-center">
+        <i class="fas fa-eye mr-3 text-blue-500"></i>任务详情
+    </h2>
+    <a href="{{ url_for('scraper.index') }}" class="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-6 py-2 rounded-lg font-semibold flex items-center transition duration-300 hover:shadow-lg hover:-translate-y-1">
+        <i class="fas fa-arrow-left mr-2"></i>返回列表
+    </a>
+</div>
+
+<!-- 任务信息卡片 -->
+<div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+    <div class="bg-gradient-to-r from-blue-600 to-blue-400 text-white p-4">
+        <h5 class="font-bold text-lg">任务基本信息</h5>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">视频ID</div>
+                <div class="font-medium"><code class="bg-blue-50 text-blue-600 px-2 py-1 rounded">{{ task.aweme_id }}</code></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">状态</div>
+                <div class="font-medium">
+                    {% if task.status == 'completed' %}
+                        <span class="bg-gradient-to-r from-blue-500 to-blue-400 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">已完成</span>
+                    {% elif task.status == 'running' %}
+                        <span class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">进行中</span>
+                    {% elif task.status == 'failed' %}
+                        <span class="bg-gradient-to-r from-blue-900 to-blue-800 text-white px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">失败</span>
+                    {% else %}
+                        <span class="bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider">等待中</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">评论总数</div>
+                <div class="font-medium">{{ task.total_comments or 0 }}</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">创建时间</div>
+                <div class="font-medium">{{ task.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+            </div>
+            {% if task.completed_at %}
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">完成时间</div>
+                <div class="font-medium">{{ task.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+            </div>
+            {% endif %}
+            {% if task.error_message %}
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition-shadow">
+                <div class="text-gray-500 text-sm mb-2">仓库信息</div>
+                <div class="font-medium text-r-500">{{ task.error_message }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 评论列表 -->
+{% if comments.items %}
+<div class="mb-6 fade-in-up delay-1">
+    <div class="flex justify-between items-center mb-4">
+        <h5 class="text-lg font-bold text-gray-700">评论列表</h5>
+        <div class="flex items-center space-x-4">
+            <a href="{{ url_for('scraper.export_comments', task_id=task.id, search_keyword=request.args.get('search_keyword', '')) }}" 
+               class="bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 py-2 rounded-lg font-semibold flex items-center transition duration-300 hover:shadow-lg hover:-translate-y-1">
+                <i class="fas fa-download mr-2"></i>导出评论
+            </a>
+            <div class="text-blue-600 font-medium">
+                共 {{ task.total_comments or 0 }} 条评论
+            </div>
+        </div>
+    </div>
+    
+    <!-- 搜索框 -->
+    <div class="bg-white p-4 rounded-lg shadow mb-4">
+        <form method="GET" action="{{ url_for('scraper.view_task', task_id=task.id) }}" class="flex">
+            <div class="flex-1"> 
+                <div class="relative"> 
+                    <input type="text" name="search_keyword" placeholder="搜索评论内容、用户." value="{{ request.args.get('search_keyword', '') }}" 
+                        class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"> 
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none"> 
+                        <i class="fa fa-search text-gray-400"></i> 
+                    </div> 
+                </div> 
+            </div>
+            <button type="submit" class="ml-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white px-4 py-3 rounded-lg font-semibold transition duration-300 hover:shadow-lg">
+                <i class="fas fa-search mr-1"></i>搜索
+            </button>
+        </form>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full bg-white rounded-lg overflow-hidden shadow">
+                <thead>
+                    <tr class="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">用户</th>
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">评论内容</th>
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">发布时间</th>
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">点赞数</th>
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">情感分析</th>
+                        <th class="px-4 py-3 text-left font-semibold text-sm uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for comment in comments.items %}
+                    <tr class="fade-in-up delay-2 hover:bg-blue-50 transition-colors" style="animation-delay: {{ loop.index * 0.05 }}s;">
+                        <td class="px-4 py-3 text-sm text-gray-900 font-medium">
+                            <div>
+                                <strong>{{ comment.user_name }}</strong>
+                                {% if comment.ip_location %}
+                                    <br><small class="text-muted">{{ comment.ip_location }}</small>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">
+                            <div class="truncate" style="max-width: 300px;">
+                                {{ comment.content[:100] }}
+                                {% if comment.content|length > 100 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">
+                            {% if comment.publish_time %}
+                                {{ comment.publish_time.strftime('%m-%d %H:%M') }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-500">{{ comment.like_count or 0 }}</td>
+                        <td class="px-4 py-3">
+                            {% if comment.sentiment_label %}
+                                {% if comment.sentiment_label == 'positive' %}
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">正面</span>
+                                {% elif comment.sentiment_label == 'negative' %}
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">负面</span>
+                                {% else %}
+                                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">中性</span>
+                                {% endif %}
+                                {% if comment.sentiment_score %}
+                                    <br><small>{{ "%.2f"|format(comment.sentiment_score) }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">未分析</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <div class="flex space-x-2">
+                                <a href="{{ url_for('scraper.edit_comment', post_id=comment.post_id) }}"
+                                   class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors duration-200">
+                                    <i class="fas fa-edit mr-1"></i>编辑
+                                </a>
+                                <form method="POST" action="{{ url_for('scraper.delete_comment', post_id=comment.post_id) }}" 
+                                      class="d-inline" onsubmit="return confirm('确定要删除这条评论吗？')">
+                                    <button type="submit" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded text-xs font-medium transition-colors duration-200">
+                                        <i class="fas fa-trash mr-1"></i>删除
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    
+    <!-- 分页 -->
+    {% if comments.pages > 1 %}
+    <div class="bg-white p-4 rounded-lg shadow flex flex-col sm:flex-row justify-between items-center mt-4">
+        <div class="text-sm text-gray-500 mb-4 sm:mb-0">
+          显示 {{ comments.start_index }} - {{ comments.end_index }} / 共 {{ task.total_comments}} 条
+        </div>
+        <div class="flex items-center space-x-2">
+          {% if comments.has_prev %}
+          <a href="{{ url_for('scraper.view_task', task_id=task.id, page=comments.prev_num, search_keyword=request.args.get('search_keyword', '')) }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded text-sm font-medium transition-colors">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+          {% endif %}
+          {% for page_num in comments.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+          {% if comments.page == page_num %}
+          <a href="{{ url_for('scraper.view_task', task_id=task.id, page=page_num, search_keyword=request.args.get('search_keyword', '')) }}" class="bg-blue-600 text-white px-3 py-2 rounded text-sm font-medium">
+            {{ page_num }}
+          </a>
+          {% else %}
+          <a href="{{ url_for('scraper.view_task', task_id=task.id, page=page_num, search_keyword=request.args.get('search_keyword', '')) }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded text-sm font-medium transition-colors">
+            {{ page_num }}
+          </a>
+          {% endif %}
+          {% else %}
+          <span class="text-gray-500 px-2">...</span>
+          {% endif %}
+          {% endfor %}
+          {% if comments.has_next %}
+          <a href="{{ url_for('scraper.view_task', task_id=task.id, page=comments.next_num, search_keyword=request.args.get('search_keyword', '')) }}" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-2 rounded text-sm font-medium transition-colors">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow-lg p-8 text-center fade-in-up">
+    <i class="fas fa-comments text-4xl text-blue-300 mb-4"></i>
+    <h4 class="text-xl font-bold text-gray-700 mb-2">暂无评论数据</h4>
+    <p class="text-gray-500">该任务还没有爬取到评论数据</p>
+</div>
+{% endif %}
+
+<script>
+// 页面加载动画
+ document.addEventListener('DOMContentLoaded', function() {
+    // 添加渐入动画类
+    const animatedElements = document.querySelectorAll('.fade-in-up');
+    animatedElements.forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    });
+    
+    // 检查元素是否在视口中
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.style.opacity = '1';
+                entry.target.style.transform = 'translateY(0)';
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1
+    });
+    
+    // 观察所有动画元素
+    animatedElements.forEach(el => {
+        observer.observe(el);
+    });
+});
+</script>
+{% endblock %}

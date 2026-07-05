@@ -1,0 +1,64 @@
+请在终端出运行下列两行代码。
+conda activate ML_DouYin_Comments_SentimentAnalysis_env
+python run.py
+
+
+
+mysql8.0数据库名：ml_douyin_comments_sentimentanalysis
+
+# 数据库连接信息：
+user: root
+password: 123456
+数据库名：ml_douyin_comments_sentimentanalysis
+字符集：utf8mb4
+排序规则：utf8mb4_0900_ai_ci
+
+# Hive
+HIVE_HOST = 'localhost'
+HIVE_PORT = 10000
+HIVE_DATABASE = 'default'
+
+# 虚拟机配置
+VM_CONFIG = {
+    'host': '192.168.58.13',
+    'user': 'root',
+    'password': '123456',
+    'name': 'djh',
+    'python_version': '2.7.5',
+    'hadoop_version': '3.3.0',
+    'hive_version': '3.1.2',
+    'zookeeper_version': '3.4.8'
+}
+
+# HDFS配置
+HDFS_CONFIG = {
+    'url': 'http://192.168.58.13:9870/',
+    'user': 'root'
+}
+
+# YARN配置
+YARN_CONFIG = {
+    'url': 'http://192.168.58.13:8088/'
+}
+
+# Hive配置
+HIVE_HOST = os.environ.get('HIVE_HOST', 'djh')
+ HIVE_PORT = int(os.environ.get('HIVE_PORT', 10000))
+ HIVE_USER = os.environ.get('HIVE_USER', 'root')
+ HIVE_PASSWORD = os.environ.get('HIVE_PASSWORD', '123456')
+HIVE_DATABASE = os.environ.get('HIVE_DATABASE', 'default')
+    
+ # SSH隧道配置（如果Hive在虚拟机中）
+    SSH_HOST = os.environ.get('SSH_HOST', '192.168.58.13')
+    SSH_PORT = int(os.environ.get('SSH_PORT', 22))
+    SSH_USER = os.environ.get('SSH_USER', 'root')
+    SSH_PASSWORD = os.environ.get('SSH_PASSWORD', '123456')
+    SSH_KEY_PATH = os.environ.get('SSH_KEY_PATH', '/root/.ssh/id_rsa')
+
+DB_CONFIG = {
+    'host': 'localhost',
+    'user': 'root',
+    'password': '123456', 
+    'database': 'douyin_comments',
+    'port': 3306
+}

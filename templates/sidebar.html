@@ -1,0 +1,223 @@
+<!-- 完全重新设计的侧边栏 - 高端极简风格 -->
+<div class="sidebar-container">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:translate-x-0 z-40 w-64 bg-bg-100 border-r border-bg-200/50 shadow-subtle transition-transform duration-500 ease-out overflow-hidden">
+        <!-- 侧边栏导航 - 高端设计 -->
+        <nav class="py-6 h-[calc(100vh-4rem)] overflow-y-auto scrollbar-hide">
+            <!-- 主导航部分 -->
+            <div class="px-6 py-3 text-xs font-bold text-text-200 uppercase tracking-widest">
+                导航
+            </div>
+            
+            {% set ep = request.endpoint or '' %}
+            <a href="{{ url_for('main.index') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'main.index' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-home text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'main.index' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">首页</span>
+            </a>
+            
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('scraper.index') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'scraper.index' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-spider text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'scraper.index' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">数据爬取</span>
+            </a>
+            
+            <a href="{{ url_for('analysis.index') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'analysis.index' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-brain text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'analysis.index' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">情感分析</span>
+            </a>
+            
+            <a href="{{ url_for('visualization.index') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'visualization.index' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-chart-bar text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'visualization.index' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">数据可视化</span>
+            </a>
+            
+            <a href="{{ url_for('ai.index') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'ai.index' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-wand-magic-sparkles text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'ai.index' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">AI 预测</span>
+            </a>
+            
+            <!-- 用户相关导航 -->
+            <div class="px-6 py-3 mt-8 text-xs font-bold text-text-200 uppercase tracking-widest">
+                账户
+            </div>
+            
+            <a href="{{ url_for('auth.profile') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'auth.profile' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-user text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'auth.profile' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">个人信息</span>
+            </a>
+            
+            <a href="{{ url_for('analysis.history') }}" 
+               class="group flex items-center px-6 py-3 text-sm font-medium rounded-xl mx-2 mb-1
+                      {{ 'bg-gradient-accent-200/8 text-accent-200 font-semibold border-l-3 border-accent-200' if ep == 'analysis.history' else 'text-text-100 hover:text-accent-200 hover:bg-bg-200/50' }} transition-all duration-300">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center group-hover:bg-primary/10 transition-all duration-300">
+                    <i class="fas fa-clock-rotate-left text-base transition-transform duration-300 group-hover:scale-110 {{ 'text-accent-200' if ep == 'analysis.history' else 'text-text-100 group-hover:text-accent-200' }}"></i>
+                </div>
+                <span class="ml-3 transition-all duration-300 group-hover:translate-x-0.5">分析历史</span>
+            </a>
+            {% endif %}
+        </nav>
+    </aside>
+    
+    <!-- 侧边栏遮罩 -->
+    <div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-30 hidden md:hidden opacity-0 transition-opacity duration-500" style="display: none;"></div>
+</div>
+
+<style>
+    .sidebar-container {
+        position: relative;
+        z-index: 40;
+    }
+    
+    #sidebar {
+        margin-top: 4rem;
+        height: calc(100vh - 4rem);
+        box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    nav a {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    @media (max-width: 767px) {
+        #sidebar {
+            margin-top: 0;
+            height: 100vh;
+            z-index: 50 !important;
+        }
+        
+        #sidebarOverlay {
+            z-index: 40 !important;
+        }
+    }
+    
+    nav {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(156, 163, 175, 0.2) transparent;
+    }
+    
+    nav::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    nav::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    nav::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.2);
+        border-radius: 20px;
+    }
+    
+    nav::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(156, 163, 175, 0.4);
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-12px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    nav a {
+        animation: slideIn 0.4s ease-out forwards;
+    }
+    
+    nav a:nth-child(1) { animation-delay: 0.05s; }
+    nav a:nth-child(2) { animation-delay: 0.1s; }
+    nav a:nth-child(3) { animation-delay: 0.15s; }
+    nav a:nth-child(4) { animation-delay: 0.2s; }
+    nav a:nth-child(5) { animation-delay: 0.25s; }
+    nav a:nth-child(6) { animation-delay: 0.3s; }
+    nav a:nth-child(7) { animation-delay: 0.35s; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        
+        function toggleSidebar() {
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.style.display = 'block';
+                setTimeout(() => {
+                    sidebarOverlay.style.opacity = '1';
+                }, 10);
+                document.body.style.overflow = 'hidden';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    sidebarOverlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 500);
+            }
+        }
+        
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', toggleSidebar);
+        }
+        
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', toggleSidebar);
+        }
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        });
+        
+        function handleResize() {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.style.display = 'none';
+                sidebarOverlay.style.opacity = '0';
+                document.body.style.overflow = '';
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+        
+        window.addEventListener('resize', handleResize);
+        handleResize();
+        
+        document.querySelectorAll('#sidebar nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth < 768) {
+                    toggleSidebar();
+                }
+            });
+        });
+    });
+</script>

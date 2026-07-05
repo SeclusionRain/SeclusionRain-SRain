@@ -1,0 +1,637 @@
+{% extends "base.html" %}
+
+{% block title %}时间情感倾向分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义样式 */
+    .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .card-time-morning {
+        background: linear-gradient(135deg, #FFB74D 0%, #FFA726 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(255, 183, 77, 0.3);
+    }
+    
+    .card-time-afternoon {
+        background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(79, 195, 247, 0.3);
+    }
+    
+    .card-time-evening {
+        background: linear-gradient(135deg, #7986CB 0%, #5C6BC0 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(121, 134, 203, 0.3);
+    }
+    
+    .btn-outline-custom {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-custom:hover {
+        transform: scale(1.05);
+        color: white !important;
+    }
+    
+    .progress-bar {
+        transition: width 1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .table-custom {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-custom thead {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .badge-custom {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        font-size: 0.8rem;
+    }
+    
+    .clock-icon {
+        animation: rotate 8s linear infinite;
+    }
+    
+    @keyframes rotate {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* 响应式设计优化 */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group label {
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .row-stats > div {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- 页面标题和操作按钮 -->
+        <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="mb-3 md:mb-0">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-clock me-2 text-purple-600 clock-icon"></i>时间情感倾向分析
+                </h2>
+                <p class="text-gray-500 mt-1">分析不同时间段的评论情感分布趋势</p>
+            </div>
+            <div>
+                <a href="{{ url_for('analysis.analysis_dashboard', history_id=history.id) }}" class="btn btn-outline-secondary py-2 px-4 rounded-lg shadow-sm flex items-center btn-outline-custom">
+                    <i class="fas fa-arrow-left me-2"></i>返回仪表板
+                </a>
+            </div>
+        </div>
+
+        <!-- 时间段统计 -->
+        <div class="row mb-6 row-stats">
+            <div class="col-md-4">
+                <div class="card text-center card-time-morning card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h5 class="card-title font-medium mb-1">上午时段</h5>
+                                <p class="text-sm opacity-90">6:00 - 11:59</p>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-inner">
+                                <i class="fas fa-sun text-2xl text-white"></i>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-up mb-1"></i>
+                                    <div class="fw-bold text-xl morning-positive">{{ time_stats.morning.positive }}</div>
+                                    <small>正面</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-down mb-1"></i>
+                                    <div class="fw-bold text-xl morning-negative">{{ time_stats.morning.negative }}</div>
+                                    <small>负面</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="opacity-90">
+                                正面率: <span class="morning-rate">{{ "%.1f"|format((time_stats.morning.positive / time_stats.morning.total * 100) if time_stats.morning.total > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-time-afternoon card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h5 class="card-title font-medium mb-1">下午时段</h5>
+                                <p class="text-sm opacity-90">12:00 - 17:59</p>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-inner">
+                                <i class="fas fa-sun text-2xl text-white"></i>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-up mb-1"></i>
+                                    <div class="fw-bold text-xl afternoon-positive">{{ time_stats.afternoon.positive }}</div>
+                                    <small>正面</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-down mb-1"></i>
+                                    <div class="fw-bold text-xl afternoon-negative">{{ time_stats.afternoon.negative }}</div>
+                                    <small>负面</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="opacity-90">
+                                正面率: <span class="afternoon-rate">{{ "%.1f"|format((time_stats.afternoon.positive / time_stats.afternoon.total * 100) if time_stats.afternoon.total > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-time-evening card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h5 class="card-title font-medium mb-1">晚上时段</h5>
+                                <p class="text-sm opacity-90">18:00 - 23:59</p>
+                            </div>
+                            <div class="bg-white/20 backdrop-blur-sm rounded-full p-3 shadow-inner">
+                                <i class="fas fa-moon text-2xl text-white"></i>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-up mb-1"></i>
+                                    <div class="fw-bold text-xl evening-positive">{{ time_stats.evening.positive }}</div>
+                                    <small>正面</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-white">
+                                    <i class="fas fa-thumbs-down mb-1"></i>
+                                    <div class="fw-bold text-xl evening-negative">{{ time_stats.evening.negative }}</div>
+                                    <small>负面</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <small class="opacity-90">
+                                正面率: <span class="evening-rate">{{ "%.1f"|format((time_stats.evening.positive / time_stats.evening.total * 100) if time_stats.evening.total > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 时间分析洞察 -->
+        <div class="card mb-6 rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-lightbulb me-2"></i>时间分析洞察
+                </h5>
+            </div>
+            <div class="card-body bg-white p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-amber-50 to-orange-50 p-5 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-amber-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-chart-pie text-amber-600"></i>
+                            </div>
+                            <h6 class="text-gray-800 font-bold text-lg">分析维度</h6>
+                        </div>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-amber-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-sun text-amber-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <strong class="text-gray-800">上午时段：</strong>
+                                    <span class="text-gray-600">用户刚开始一天的活动，情绪相对平和</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-sun text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <strong class="text-gray-800">下午时段：</strong>
+                                    <span class="text-gray-600">工作学习压力期，情绪波动较大</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-indigo-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-moon text-indigo-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <strong class="text-gray-800">晚上时段：</strong>
+                                    <span class="text-gray-600">休闲娱乐时间，情绪表达更自由</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-5 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-purple-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-chart-line text-purple-600"></i>
+                            </div>
+                            <h6 class="text-gray-800 font-bold text-lg">时间特征</h6>
+                        </div>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-purple-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-check text-purple-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">不同时间段用户的情感表达习惯不同</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-purple-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-check text-purple-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">工作时间与休闲时间的情感差异明显</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-purple-100 p-1 rounded-full mr-2 mt-1">
+                                    <i class="fas fa-check text-purple-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">时间因素对情感倾向有显著影响</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 按时间排序的评论列表 -->
+        <div class="card rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center">
+                    <h5 class="mb-3 md:mb-0 font-bold flex items-center">
+                        <i class="fas fa-list me-2"></i>按时间排序的评论
+                    </h5>
+                    <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="time-filter" id="all-time" autocomplete="off" {% if time_filter == 'all' or time_filter is none %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="all-time">
+                                <a href="{{ url_for('analysis.time_analysis', history_id=history.id, time_filter='all', page=1) }}" class="text-white">全部</a>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="time-filter" id="morning" autocomplete="off" {% if time_filter == 'morning' %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="morning">
+                                <a href="{{ url_for('analysis.time_analysis', history_id=history.id, time_filter='morning', page=1) }}" class="text-white">上午</a>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="time-filter" id="afternoon" autocomplete="off" {% if time_filter == 'afternoon' %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="afternoon">
+                                <a href="{{ url_for('analysis.time_analysis', history_id=history.id, time_filter='afternoon', page=1) }}" class="text-white">下午</a>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="time-filter" id="evening" autocomplete="off" {% if time_filter == 'evening' %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="evening">
+                                <a href="{{ url_for('analysis.time_analysis', history_id=history.id, time_filter='evening', page=1) }}" class="text-white">晚上</a>
+                            </label>
+                        </div>
+                </div>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">发布时间</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">时段</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">评论内容</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">情感</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">置信度</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">点赞数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="time-comments-table" class="divide-y divide-gray-200">
+                            {% for comment in comments %}
+                            {% if comment.publish_time %}
+                            {% if comment.publish_time is string %}
+                                {% set time_period = 'unknown' %}
+                                {% set period_name = '未知' %}
+                                {% set period_class = 'secondary' %}
+                            {% else %}
+                                {% if comment.publish_time.hour >= 6 and comment.publish_time.hour < 12 %}
+                                    {% set time_period = 'morning' %}
+                                    {% set period_name = '上午' %}
+                                    {% set period_class = 'warning' %}
+                                {% elif comment.publish_time.hour >= 12 and comment.publish_time.hour < 18 %}
+                                    {% set time_period = 'afternoon' %}
+                                    {% set period_name = '下午' %}
+                                    {% set period_class = 'info' %}
+                                {% else %}
+                                    {% set time_period = 'evening' %}
+                                    {% set period_name = '晚上' %}
+                                    {% set period_class = 'dark' %}
+                                {% endif %}
+                            {% endif %}
+                            <tr class="time-comment-row hover:bg-gray-50 transition-colors duration-150" data-time-period="{{ time_period }}">
+                                <td class="px-4 py-3 text-sm text-gray-800">
+                                    {% if comment.publish_time is string %}
+                                        {{ comment.publish_time }}
+                                    {% else %}
+                                        {{ comment.publish_time.strftime('%Y-%m-%d %H:%M') }}
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <span class="badge bg-{{ period_class }} px-3 py-1 text-sm badge-custom">{{ period_name }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 comment-content" title="{{ comment.content }}">
+                                    <div class="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {{ comment.content }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if comment.sentiment_label == 'positive' %}
+                                        <span class="badge bg-success px-3 py-1 text-sm badge-custom">正面</span>
+                                    {% else %}
+                                        <span class="badge bg-danger px-3 py-1 text-sm badge-custom">负面</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                        <div class="progress-bar progress-bar-time
+                                            {% if comment.sentiment_label == 'positive' %}bg-success
+                                            {% else %}bg-danger{% endif %}" 
+                                            style="width: 0%; transition: width 1s ease-in-out;">
+                                            {{ (comment.sentiment_score * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 like-count">{{ comment.like_count or 0 }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 无数据提示 -->
+                {% if comments|length == 0 %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-3"></i>
+                    <p>暂无评论数据</p>
+                </div>
+                {% endif %}
+                
+                <!-- 分页导航 -->
+                {% if pagination %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.time_analysis', history_id=history.id, page=pagination.page-1, time_filter=time_filter) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        
+                        <!-- 显示首页 -->
+                        <li class="page-item {% if pagination.page == 1 %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.time_analysis', history_id=history.id, page=1, time_filter=time_filter) }}">1</a>
+                        </li>
+                        
+                        <!-- 显示当前页附近的页码 -->
+                        {% set show_pages = 3 %}
+                        {% set start_page = (2 if pagination.page - show_pages < 2 else pagination.page - show_pages) %}
+                        {% set end_page = (pagination.pages - 1 if pagination.page + show_pages > pagination.pages - 1 else pagination.page + show_pages) %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if start_page > 2 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.time_analysis', history_id=history.id, page=page_num, time_filter=time_filter) }}">{{ page_num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if end_page < pagination.pages - 1 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        <!-- 显示末页 -->
+                        {% if pagination.pages > 1 %}
+                        <li class="page-item {% if pagination.page == pagination.pages %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.time_analysis', history_id=history.id, page=pagination.pages, time_filter=time_filter) }}">{{ pagination.pages }}</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.time_analysis', history_id=history.id, page=pagination.page+1, time_filter=time_filter) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 百分比滚动动画
+    function animatePercentage(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = progress * (end - start) + start;
+            element.textContent = value.toFixed(1);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 初始化动画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 上午时段数字动画
+        const morningPositive = document.querySelector('.morning-positive');
+        if (morningPositive) {
+            animateValue(morningPositive, 0, parseInt(morningPositive.textContent), 1500);
+        }
+        
+        const morningNegative = document.querySelector('.morning-negative');
+        if (morningNegative) {
+            animateValue(morningNegative, 0, parseInt(morningNegative.textContent), 1500);
+        }
+        
+        const morningRate = document.querySelector('.morning-rate');
+        if (morningRate) {
+            animatePercentage(morningRate, 0, parseFloat(morningRate.textContent), 1500);
+        }
+        
+        // 下午时段数字动画
+        const afternoonPositive = document.querySelector('.afternoon-positive');
+        if (afternoonPositive) {
+            animateValue(afternoonPositive, 0, parseInt(afternoonPositive.textContent), 1500);
+        }
+        
+        const afternoonNegative = document.querySelector('.afternoon-negative');
+        if (afternoonNegative) {
+            animateValue(afternoonNegative, 0, parseInt(afternoonNegative.textContent), 1500);
+        }
+        
+        const afternoonRate = document.querySelector('.afternoon-rate');
+        if (afternoonRate) {
+            animatePercentage(afternoonRate, 0, parseFloat(afternoonRate.textContent), 1500);
+        }
+        
+        // 晚上时段数字动画
+        const eveningPositive = document.querySelector('.evening-positive');
+        if (eveningPositive) {
+            animateValue(eveningPositive, 0, parseInt(eveningPositive.textContent), 1500);
+        }
+        
+        const eveningNegative = document.querySelector('.evening-negative');
+        if (eveningNegative) {
+            animateValue(eveningNegative, 0, parseInt(eveningNegative.textContent), 1500);
+        }
+        
+        const eveningRate = document.querySelector('.evening-rate');
+        if (eveningRate) {
+            animatePercentage(eveningRate, 0, parseFloat(eveningRate.textContent), 1500);
+        }
+        
+        // 评论表格中的进度条动画
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach((bar, index) => {
+                // 延迟每个进度条的动画开始时间，创造顺序效果
+                setTimeout(() => {
+                    // 从progress-bar元素获取文本内容并正确处理
+                    const width = bar.textContent.split('%')[0] + '%';
+                    bar.style.width = width;
+                }, index * 50);
+            });
+        }, 1000);
+        
+        // 评论表格中的点赞数动画
+        setTimeout(() => {
+            document.querySelectorAll('.like-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+        }, 1500);
+    });
+
+    // 筛选功能已迁移到后端API实现
+</script>
+{% endblock %}

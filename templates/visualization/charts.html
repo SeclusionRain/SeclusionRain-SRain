@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}可视化仪表板 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- 页面标题和返回按钮 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in-up">
+        <div>
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 flex items-center">
+                <i class="fas fa-chart-line text-primary mr-3"></i>可视化分析仪表板
+            </h2>
+            <p class="text-gray-500 mt-2">通过多种图表深入分析评论情感数据</p>
+        </div>
+        <a href="{{ url_for('visualization.index') }}" 
+           class="mt-4 md:mt-0 inline-flex items-center bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg transition-all duration-300 shadow-sm hover:shadow hover:translate-y-[-2px]">
+            <i class="fas fa-arrow-left mr-2"></i>返回列表
+        </a>
+    </div>
+
+    <!-- 基本信息概览 -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8 animate-fade-in-up" style="animation-delay: 100ms;">
+        <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center">
+            <i class="fas fa-dashboard text-primary mr-2"></i>分析概览
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- 总评论数 -->
+            <div class="flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div class="rounded-full bg-primary/10 p-3 mr-4">
+                    <i class="fas fa-comments text-2xl text-primary"></i>
+                </div>
+                <div class="text-center">
+                    <h4 class="text-3xl font-bold text-primary">{{ history.total_comments }}</h4>
+                    <p class="text-sm text-gray-600">总评论数</p>
+                </div>
+            </div>
+            
+            <!-- 正面评论数 -->
+            <div class="flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-green-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div class="rounded-full bg-success/10 p-3 mr-4">
+                    <i class="fas fa-thumbs-up text-2xl text-success"></i>
+                </div>
+                <div class="text-center">
+                    <h4 class="text-3xl font-bold text-success">{{ history.positive_count }}</h4>
+                    <p class="text-sm text-gray-600">正面评论</p>
+                </div>
+            </div>
+            
+            <!-- 负面评论数 -->
+            <div class="flex items-center justify-center p-4 bg-gradient-to-br from-gray-50 to-red-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+                <div class="rounded-full bg-danger/10 p-3 mr-4">
+                    <i class="fas fa-thumbs-down text-2xl text-danger"></i>
+                </div>
+                <div class="text-center">
+                    <h4 class="text-3xl font-bold text-danger">{{ history.negative_count }}</h4>
+                    <p class="text-sm text-gray-600">负面评论</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 四个可视化模块 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 1. 关键词词云展示模块 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden h-full transform transition-all duration-300 hover:shadow-xl animate-fade-in-up" style="animation-delay: 200ms;">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-5">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-cloud mr-2"></i>关键词词云分析
+                    </h5>
+                    <a href="{{ url_for('visualization.wordcloud_module', history_id=history.id) }}" 
+                       class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm flex items-center hover:translate-y-[-1px]">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>详细分析
+                    </a>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-gray-600 mb-4 text-sm flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5"></i>
+                    展示总体、积极、消极情感的高频关键词词云图
+                </p>
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-info/10 p-3 mb-3">
+                                <i class="fas fa-globe text-2xl text-info"></i>
+                            </div>
+                            <div class="text-sm text-gray-700 font-medium">总体词云</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-green-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-success/10 p-3 mb-3">
+                                <i class="fas fa-smile text-2xl text-success"></i>
+                            </div>
+                            <div class="text-sm text-gray-700 font-medium">积极词云</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-red-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-danger/10 p-3 mb-3">
+                                <i class="fas fa-frown text-2xl text-danger"></i>
+                            </div>
+                            <div class="text-sm text-gray-700 font-medium">消极词云</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 点赞量情感倾向可视化模块 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden h-full transform transition-all duration-300 hover:shadow-xl animate-fade-in-up" style="animation-delay: 300ms;">
+            <div class="bg-gradient-to-r from-green-500 to-teal-600 text-white p-5">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-heart mr-2"></i>点赞量情感分析
+                    </h5>
+                    <a href="{{ url_for('visualization.likes_charts', history_id=history.id) }}" 
+                       class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm flex items-center hover:translate-y-[-1px]">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>详细分析
+                    </a>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-gray-600 mb-4 text-sm flex items-start">
+                    <i class="fas fa-info-circle text-green-500 mr-2 mt-0.5"></i>
+                    分析点赞量与情感倾向的关联性，包含多维度图表展示
+                </p>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-blue-500/10 p-2 mb-2">
+                                <i class="fas fa-chart-pie text-xl text-blue-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">分层饼图</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-cyan-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-cyan-500/10 p-2 mb-2">
+                                <i class="fas fa-chart-bar text-xl text-cyan-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">柱状对比</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-yellow-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-yellow-500/10 p-2 mb-2">
+                                <i class="fas fa-dot-circle text-xl text-yellow-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">散点分布</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-gray-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-gray-500/10 p-2 mb-2">
+                                <i class="fas fa-chart-area text-xl text-gray-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">趋势分析</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 时间情感倾向可视化模块 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden h-full transform transition-all duration-300 hover:shadow-xl animate-fade-in-up" style="animation-delay: 400ms;">
+            <div class="bg-gradient-to-r from-blue-400 to-indigo-500 text-white p-5">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-clock mr-2"></i>时间情感分析
+                    </h5>
+                    <a href="{{ url_for('visualization.time_charts', history_id=history.id) }}" 
+                       class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm flex items-center hover:translate-y-[-1px]">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>详细分析
+                    </a>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-gray-600 mb-4 text-sm flex items-start">
+                    <i class="fas fa-info-circle text-blue-400 mr-2 mt-0.5"></i>
+                    展示不同时间维度下的情感分布规律和变化趋势
+                </p>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-indigo-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-indigo-500/10 p-2 mb-2">
+                                <i class="fas fa-chart-line text-xl text-indigo-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">时间趋势</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-blue-400/10 p-2 mb-2">
+                                <i class="fas fa-clock text-xl text-blue-400"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">小时分布</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-amber-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-amber-500/10 p-2 mb-2">
+                                <i class="fas fa-sun text-xl text-amber-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">时段对比</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-purple-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-purple-500/10 p-2 mb-2">
+                                <i class="fas fa-calendar-alt text-xl text-purple-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">日期热力</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 地域情感倾向可视化模块 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden h-full transform transition-all duration-300 hover:shadow-xl animate-fade-in-up" style="animation-delay: 500ms;">
+            <div class="bg-gradient-to-r from-amber-500 to-orange-600 text-white p-5">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-lg font-semibold flex items-center">
+                        <i class="fas fa-map-marker-alt mr-2"></i>地域情感分析
+                    </h5>
+                    <a href="{{ url_for('visualization.location_charts', history_id=history.id) }}" 
+                       class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-all duration-300 text-sm flex items-center hover:translate-y-[-1px]">
+                        <i class="fas fa-expand-arrows-alt mr-1"></i>详细分析
+                    </a>
+                </div>
+            </div>
+            <div class="p-5">
+                <p class="text-gray-600 mb-4 text-sm flex items-start">
+                    <i class="fas fa-info-circle text-amber-500 mr-2 mt-0.5"></i>
+                    分析不同地域用户的情感倾向差异和地理分布特征
+                </p>
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-red-500 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-red-500/10 p-2 mb-2">
+                                <i class="fas fa-map-marked-alt text-xl text-red-500"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">地域分布</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-blue-400 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-blue-400/10 p-2 mb-2">
+                                <i class="fas fa-chart-bar text-xl text-blue-400"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">排行榜</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-red-600 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-red-600/10 p-2 mb-2">
+                                <i class="fas fa-fire text-xl text-red-600"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">热力图</div>
+                        </div>
+                    </div>
+                    <div class="border border-gray-200 rounded-lg p-3 hover:border-gray-600 hover:shadow-md transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                        <div class="flex flex-col items-center">
+                            <div class="rounded-full bg-gray-600/10 p-2 mb-2">
+                                <i class="fas fa-chart-pie text-xl text-gray-600"></i>
+                            </div>
+                            <div class="text-xs text-gray-700 font-medium">比例分析</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

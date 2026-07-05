@@ -1,0 +1,793 @@
+{% extends "base.html" %}
+
+{% block title %}点赞量情感倾向分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义样式 */
+    .card-hover {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .card-likes-high {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        position: relative;
+    }
+    
+    .card-likes-high::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #4facfe, #00f2fe);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .card-likes-high:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .card-likes-medium {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(250, 112, 154, 0.3);
+        position: relative;
+    }
+    
+    .card-likes-medium::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #fa709a, #fee140);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .card-likes-medium:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .card-likes-low {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        position: relative;
+    }
+    
+    .card-likes-low::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .card-likes-low:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        transition: transform 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .btn-primary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+    
+    .btn-primary-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: scale(1.05);
+    }
+    
+    .btn-outline-custom {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-outline-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+    }
+    
+    .btn-outline-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-outline-custom:hover {
+        transform: scale(1.05);
+        color: white !important;
+    }
+    
+    .insight-card {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .insight-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .table-custom {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-custom thead {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .badge-custom {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+    }
+    
+    .heart-icon {
+        animation: heartbeat 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes heartbeat {
+        0%, 100% {
+            transform: scale(1);
+        }
+        14%, 43% {
+            transform: scale(1.1);
+        }
+        28%, 57% {
+            transform: scale(0.9);
+        }
+    }
+    
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1aa;
+    }
+    
+    /* 响应式设计优化 */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group label {
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .row-stats > div {
+            margin-bottom: 1rem;
+        }
+        
+        .card-body {
+            padding: 1rem !important;
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* 表格行悬停动画 */
+    .likes-comment-row {
+        transition: all 0.3s ease;
+    }
+    
+    .likes-comment-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 数字动画容器 */
+    .count-container {
+        display: inline-block;
+        min-width: 60px;
+    }
+    
+    /* 无数据提示动画 */
+    .no-data-message {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- 页面标题和操作按钮 -->
+        <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="mb-3 md:mb-0">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-heart me-2 text-pink-500 heart-icon"></i>点赞量情感倾向分析
+                </h2>
+                <p class="text-gray-500 mt-1">分析不同点赞量级别的评论情感特征</p>
+            </div>
+            <div>
+                <a href="{{ url_for('analysis.analysis_dashboard', history_id=history.id) }}" class="btn btn-outline-secondary py-2 px-4 rounded-lg shadow-sm flex items-center btn-outline-custom">
+                    <i class="fas fa-arrow-left me-2"></i>返回仪表板
+                </a>
+            </div>
+        </div>
+
+        <!-- 点赞量分层统计 -->
+        <div class="row mb-6 row-stats">
+            {% set high_likes = all_comments|selectattr('like_count', 'greaterthan', 100)|list %}
+            {% set medium_likes = all_comments|selectattr('like_count', 'lessthan', 101)|selectattr('like_count', 'greaterthan', 10)|list %}
+            {% set low_likes = all_comments|selectattr('like_count', 'lessthan', 11)|list %}
+            
+            <div class="col-md-4">
+                <div class="card text-center card-likes-high card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-fire text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">高点赞量评论 (>100赞)</h5>
+                        <h3 class="text-3xl font-bold mb-3 high-count">{{ high_likes|length }}</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-up text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold high-positive">{{ high_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length }}</div>
+                                <small>正面</small>
+                            </div>
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-down text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold high-negative">{{ high_likes|selectattr('sentiment_label', 'equalto', 'negative')|list|length }}</div>
+                                <small>负面</small>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-opacity-20 p-2 rounded-lg inline-block">
+                            <small class="opacity-90">
+                                正面率: <span class="font-bold high-rate">{{ "%.1f"|format((high_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length / high_likes|length * 100) if high_likes|length > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-likes-medium card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-star text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">中点赞量评论 (11-100赞)</h5>
+                        <h3 class="text-3xl font-bold mb-3 medium-count">{{ medium_likes|length }}</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-up text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold medium-positive">{{ medium_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length }}</div>
+                                <small>正面</small>
+                            </div>
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-down text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold medium-negative">{{ medium_likes|selectattr('sentiment_label', 'equalto', 'negative')|list|length }}</div>
+                                <small>负面</small>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-opacity-20 p-2 rounded-lg inline-block">
+                            <small class="opacity-90">
+                                正面率: <span class="font-bold medium-rate">{{ "%.1f"|format((medium_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length / medium_likes|length * 100) if medium_likes|length > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-likes-low card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-meh text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">低点赞量评论 (≤10赞)</h5>
+                        <h3 class="text-3xl font-bold mb-3 low-count">{{ low_likes|length }}</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-up text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold low-positive">{{ low_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length }}</div>
+                                <small>正面</small>
+                            </div>
+                            <div class="bg-opacity-20 p-3 rounded-lg">
+                                <div class="flex items-center justify-center mb-1">
+                                    <i class="fas fa-thumbs-down text-lg"></i>
+                                </div>
+                                <div class="text-xl font-bold low-negative">{{ low_likes|selectattr('sentiment_label', 'equalto', 'negative')|list|length }}</div>
+                                <small>负面</small>
+                            </div>
+                        </div>
+                        <div class="mt-3 bg-opacity-20 p-2 rounded-lg inline-block">
+                            <small class="opacity-90">
+                                正面率: <span class="font-bold low-rate">{{ "%.1f"|format((low_likes|selectattr('sentiment_label', 'equalto', 'positive')|list|length / low_likes|length * 100) if low_likes|length > 0 else 0) }}</span>%
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 点赞量分析洞察 -->
+        <div class="card mb-6 insight-card">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-lightbulb me-2"></i>点赞量分析洞察
+                </h5>
+            </div>
+            <div class="card-body bg-white p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-lg">
+                        <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-chart-pie text-purple-600 mr-2"></i>分析维度
+                        </h6>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-fire text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">高赞评论：</span>
+                                    <span class="text-gray-600">获得广泛认同，通常表达主流观点</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-pink-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-star text-pink-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">中赞评论：</span>
+                                    <span class="text-gray-600">有一定共鸣，观点相对平衡</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-purple-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-meh text-purple-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">低赞评论：</span>
+                                    <span class="text-gray-600">个人观点较强，可能存在争议</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-br from-orange-50 to-red-50 p-5 rounded-lg">
+                        <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-heart text-red-500 mr-2"></i>点赞特征
+                        </h6>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-orange-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-thumbs-up text-orange-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">点赞数反映了评论的受欢迎程度</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-orange-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-thumbs-up text-orange-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">高赞评论往往情感表达更积极</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-orange-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-thumbs-up text-orange-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">点赞量与情感倾向存在一定关联性</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 按点赞量排序的评论列表 -->
+        <div class="card rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center">
+                    <h5 class="mb-3 md:mb-0 font-bold flex items-center">
+                        <i class="fas fa-list me-2"></i>按点赞量排序的评论
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="likes-filter" id="all-likes" autocomplete="off" {% if likes_level == 'all' %}checked{% endif %}>
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="all-likes">
+                            <a href="{{ url_for('analysis.likes_analysis', history_id=history.id, level='all') }}" class="text-decoration-none text-inherit">全部</a>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="likes-filter" id="high-likes" autocomplete="off" {% if likes_level == 'high' %}checked{% endif %}>
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="high-likes">
+                            <a href="{{ url_for('analysis.likes_analysis', history_id=history.id, level='high') }}" class="text-decoration-none text-inherit">高赞</a>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="likes-filter" id="medium-likes" autocomplete="off" {% if likes_level == 'medium' %}checked{% endif %}>
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="medium-likes">
+                            <a href="{{ url_for('analysis.likes_analysis', history_id=history.id, level='medium') }}" class="text-decoration-none text-inherit">中赞</a>
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="likes-filter" id="low-likes" autocomplete="off" {% if likes_level == 'low' %}checked{% endif %}>
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="low-likes">
+                            <a href="{{ url_for('analysis.likes_analysis', history_id=history.id, level='low') }}" class="text-decoration-none text-inherit">低赞</a>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                <table class="table table-hover table-custom">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">点赞数</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">赞量等级</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">评论内容</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">情感</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">置信度</th>
+                            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">发布时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="likes-comments-table" class="divide-y divide-gray-200">
+                        {% for comment in comments %}
+                        {% set like_count = comment.like_count or 0 %}
+                        {% if like_count > 100 %}
+                            {% set likes_level = 'high' %}
+                            {% set level_name = '高赞' %}
+                            {% set level_class = 'success' %}
+                        {% elif like_count > 10 %}
+                            {% set likes_level = 'medium' %}
+                            {% set level_name = '中赞' %}
+                            {% set level_class = 'warning' %}
+                        {% else %}
+                            {% set likes_level = 'low' %}
+                            {% set level_name = '低赞' %}
+                            {% set level_class = 'secondary' %}
+                        {% endif %}
+                        <tr class="likes-comment-row hover:bg-gray-50 transition-colors duration-150" data-likes-level="{{ likes_level }}">
+                            <td class="px-4 py-3 text-sm">
+                                <div class="flex items-center">
+                                    <span class="font-bold text-primary like-count">{{ like_count }}</span>
+                                    <i class="fas fa-heart text-danger ms-2 heart-icon"></i>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                <span class="badge bg-{{ level_class }} px-3 py-1 text-sm badge-custom">{{ level_name }}</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-800 comment-content" title="{{ comment.content }}">
+                                <div class="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                    {{ comment.content }}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm">
+                                {% if comment.sentiment_label == 'positive' %}
+                                    <span class="badge bg-success px-3 py-1 text-sm badge-custom">正面</span>
+                                {% else %}
+                                    <span class="badge bg-danger px-3 py-1 text-sm badge-custom">负面</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                    <div class="progress-bar 
+                                        {% if comment.sentiment_label == 'positive' %}bg-success
+                                        {% else %}bg-danger{% endif %}" 
+                                        style="width: 0%; transition: width 1s ease-in-out;">
+                                        {{ (comment.sentiment_score * 100)|round(1) }}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">
+                                {% if comment.publish_time %}
+                                    {% if comment.publish_time is string %}
+                                        {{ comment.publish_time }}
+                                    {% else %}
+                                        {{ comment.publish_time.strftime('%m-%d %H:%M') }}
+                                    {% endif %}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 分页导航 -->
+                {% if pagination %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.likes_analysis', history_id=history.id, page=pagination.page-1, likes_level=likes_level) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        
+                        <!-- 显示首页 -->
+                        <li class="page-item {% if pagination.page == 1 %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.likes_analysis', history_id=history.id, page=1, likes_level=likes_level) }}">1</a>
+                        </li>
+                        
+                        <!-- 显示当前页附近的页码 -->
+                        {% set show_pages = 3 %}
+                        {% set start_page = (2 if pagination.page - show_pages < 2 else pagination.page - show_pages) %}
+                        {% set end_page = (pagination.pages - 1 if pagination.page + show_pages > pagination.pages - 1 else pagination.page + show_pages) %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if start_page > 2 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.likes_analysis', history_id=history.id, page=page_num, likes_level=likes_level) }}">{{ page_num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if end_page < pagination.pages - 1 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        <!-- 显示末页 -->
+                        {% if pagination.pages > 1 %}
+                        <li class="page-item {% if pagination.page == pagination.pages %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.likes_analysis', history_id=history.id, page=pagination.pages, likes_level=likes_level) }}">{{ pagination.pages }}</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.likes_analysis', history_id=history.id, page=pagination.page+1, likes_level=likes_level) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                <!-- 无数据提示 -->
+                {% if comments|length == 0 %}
+                <div class="text-center py-12 text-gray-500 bg-gray-50 rounded-lg no-data-message">
+                    <div class="bg-white p-4 inline-block rounded-full mb-4 shadow-md">
+                        <i class="fas fa-info-circle text-3xl text-pink-400"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">暂无评论数据</h4>
+                    <p>请先确保有分析完成的评论数据</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 百分比滚动动画
+    function animatePercentage(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = progress * (end - start) + start;
+            element.textContent = value.toFixed(1);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 初始化动画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 数字滚动动画
+        // 高赞数据
+        const highCount = document.querySelector('.high-count');
+        if (highCount) {
+            animateValue(highCount, 0, parseInt(highCount.textContent), 1500);
+        }
+        
+        const highPositive = document.querySelector('.high-positive');
+        if (highPositive) {
+            animateValue(highPositive, 0, parseInt(highPositive.textContent), 1500);
+        }
+        
+        const highNegative = document.querySelector('.high-negative');
+        if (highNegative) {
+            animateValue(highNegative, 0, parseInt(highNegative.textContent), 1500);
+        }
+        
+        const highRate = document.querySelector('.high-rate');
+        if (highRate) {
+            animatePercentage(highRate, 0, parseFloat(highRate.textContent), 1500);
+        }
+        
+        // 中赞数据
+        const mediumCount = document.querySelector('.medium-count');
+        if (mediumCount) {
+            animateValue(mediumCount, 0, parseInt(mediumCount.textContent), 1500);
+        }
+        
+        const mediumPositive = document.querySelector('.medium-positive');
+        if (mediumPositive) {
+            animateValue(mediumPositive, 0, parseInt(mediumPositive.textContent), 1500);
+        }
+        
+        const mediumNegative = document.querySelector('.medium-negative');
+        if (mediumNegative) {
+            animateValue(mediumNegative, 0, parseInt(mediumNegative.textContent), 1500);
+        }
+        
+        const mediumRate = document.querySelector('.medium-rate');
+        if (mediumRate) {
+            animatePercentage(mediumRate, 0, parseFloat(mediumRate.textContent), 1500);
+        }
+        
+        // 低赞数据
+        const lowCount = document.querySelector('.low-count');
+        if (lowCount) {
+            animateValue(lowCount, 0, parseInt(lowCount.textContent), 1500);
+        }
+        
+        const lowPositive = document.querySelector('.low-positive');
+        if (lowPositive) {
+            animateValue(lowPositive, 0, parseInt(lowPositive.textContent), 1500);
+        }
+        
+        const lowNegative = document.querySelector('.low-negative');
+        if (lowNegative) {
+            animateValue(lowNegative, 0, parseInt(lowNegative.textContent), 1500);
+        }
+        
+        const lowRate = document.querySelector('.low-rate');
+        if (lowRate) {
+            animatePercentage(lowRate, 0, parseFloat(lowRate.textContent), 1500);
+        }
+        
+        // 评论表格中的点赞数动画
+        setTimeout(() => {
+            document.querySelectorAll('.like-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+        }, 500);
+        
+        // 进度条动画
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                const width = bar.textContent.split('%')[0] + '%';
+                bar.style.width = width;
+            });
+        }, 1000);
+    });
+
+    // 筛选功能已迁移到后端API实现
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}可视化 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- 页面标题 -->
+    <div class="mb-8 animate-fade-in-up">
+        <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-gray-800 flex items-center">
+            <i class="fas fa-chart-bar text-primary mr-3"></i>数据可视化
+        </h2>
+        <p class="text-gray-500 mt-2">探索您的评论情感分析结果的可视化展示</p>
+    </div>
+
+    {% if histories %}
+    <!-- 分析结果卡片网格 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for history in histories %}
+        <div class="bg-white rounded-xl shadow-card p-6 transform transition-smooth hover:shadow-card-hover hover:-translate-y-1 card-hover animate-fade-in-up" style="animation-delay: {{ loop.index0 * 100 }}ms;">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">{{ history.model_name }}</h3>
+                <span class="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {{ history.analysis_time.strftime('%Y-%m-%d %H:%M') }}
+                </span>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="space-y-3 mb-5">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">总评论</span>
+                    <span class="font-bold text-gray-900">{{ history.total_comments }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">正面</span>
+                    <span class="font-bold text-green-600">{{ history.positive_count }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">负面</span>
+                    <span class="font-bold text-red-600">{{ history.negative_count }}</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600">中性</span>
+                    <span class="font-bold text-blue-600">{{ history.neutral_count }}</span>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" 
+               class="w-full flex items-center justify-center bg-gradient-primary text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg">
+                <i class="fas fa-chart-line mr-2"></i>查看图表
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- 空状态 -->
+    <div class="bg-white rounded-xl shadow-card p-12 text-center animate-fade-in-up">
+        <div class="bg-gray-100 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
+            <i class="fas fa-chart-bar text-4xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-semibold text-gray-800 mb-3">还没有分析结果</h3>
+        <p class="text-gray-500 mb-6 max-w-md mx-auto">
+            请先进行情感分析，然后回到这里查看可视化结果
+        </p>
+        <a href="{{ url_for('analysis.index') }}" 
+           class="inline-flex items-center bg-gradient-primary text-white px-6 py-3 rounded-lg hover:opacity-90 transition-all duration-300 shadow-md hover:shadow-lg">
+            <i class="fas fa-brain mr-2"></i>开始分析
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

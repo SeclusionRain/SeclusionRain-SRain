@@ -1,0 +1,623 @@
+{% extends "base.html" %}
+
+{% block title %}分析结果 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义样式 */
+    .card-hover {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gradient-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    .gradient-card {
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: transform 0.2s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .btn-primary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+    
+    .btn-primary-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: scale(1.05);
+    }
+    
+    .btn-outline-custom {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-outline-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+    }
+    
+    .btn-outline-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-outline-custom:hover {
+        transform: scale(1.05);
+        color: white !important;
+    }
+    
+    .progress-bar {
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        transform: translateX(-100%);
+        animation: progressShimmer 2s infinite;
+    }
+    
+    @keyframes progressShimmer {
+        100% { transform: translateX(100%); }
+    }
+    
+    .table-custom {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-custom thead {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .stat-card-1 {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .stat-card-1::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card-1:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .stat-card-2 {
+        background: linear-gradient(135deg, #66bb6a 0%, #2e7d32 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .stat-card-2::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #66bb6a, #2e7d32);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card-2:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .stat-card-3 {
+        background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .stat-card-3::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ef5350, #c62828);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card-3:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .stat-card-4 {
+        background: linear-gradient(135deg, #90a4ae 0%, #546e7a 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .stat-card-4::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #90a4ae, #546e7a);
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card-4:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .badge-custom {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        font-size: 0.8rem;
+        transition: all 0.3s ease;
+    }
+    
+    .badge-custom:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1aa;
+    }
+    
+    /* 响应式设计优化 */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group label {
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .card-body {
+            padding: 1rem !important;
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* 表格行悬停动画 */
+    .comment-row {
+        transition: all 0.3s ease;
+    }
+    
+    .comment-row:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 数字动画容器 */
+    .count-container {
+        display: inline-block;
+        min-width: 60px;
+    }
+    
+    /* 无数据提示动画 */
+    .no-data-message {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* 分析信息项悬停效果 */
+    .analysis-info-item {
+        transition: all 0.3s ease;
+        border-radius: 0.5rem;
+        padding: 0.5rem 0;
+    }
+    
+    .analysis-info-item:hover {
+        background: rgba(0, 0, 0, 0.02);
+        transform: translateX(5px);
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- 页面标题和操作按钮 -->
+        <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="mb-3 md:mb-0">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-pie me-2 text-purple-600"></i>分析结果
+                </h2>
+                <p class="text-gray-500 mt-1">详细的情感分析数据与评论展示</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" class="btn btn-primary-custom text-white py-2 px-4 rounded-lg shadow-md flex items-center">
+                    <i class="fas fa-chart-bar me-2"></i>可视化图表
+                </a>
+                <a href="{{ url_for('analysis.index') }}" class="btn btn-outline-secondary py-2 px-4 rounded-lg shadow-sm flex items-center btn-outline-custom">
+                    <i class="fas fa-arrow-left me-2"></i>返回分析
+                </a>
+            </div>
+        </div>
+
+        <!-- 分析概览 -->
+        <div class="row mb-6">
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center stat-card-1 shadow-lg rounded-lg overflow-hidden card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-comments text-3xl opacity-80"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90">总评论数</h5>
+                        <h2 class="text-3xl font-bold total-count">{{ history.total_comments }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center stat-card-2 shadow-lg rounded-lg overflow-hidden card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-smile text-3xl opacity-80"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90">正面情感</h5>
+                        <h2 class="text-3xl font-bold positive-count">{{ history.positive_count }}</h2>
+                        <small class="opacity-80">{{ "%.1f"|format(history.positive_count / history.total_comments * 100) }}%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center stat-card-3 shadow-lg rounded-lg overflow-hidden card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-frown text-3xl opacity-80"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90">负面情感</h5>
+                        <h2 class="text-3xl font-bold negative-count">{{ history.negative_count }}</h2>
+                        <small class="opacity-80">{{ "%.1f"|format(history.negative_count / history.total_comments * 100) }}%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="card text-center stat-card-4 shadow-lg rounded-lg overflow-hidden card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-meh text-3xl opacity-80"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90">中性情感</h5>
+                        <h2 class="text-3xl font-bold neutral-count">{{ history.neutral_count }}</h2>
+                        <small class="opacity-80">{{ "%.1f"|format(history.neutral_count / history.total_comments * 100) }}%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 分析信息 -->
+        <div class="card mb-6 rounded-lg shadow-md overflow-hidden card-hover">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-info-circle me-2"></i>分析信息
+                </h5>
+            </div>
+            <div class="card-body bg-white p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-purple-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-brain text-purple-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">使用模型</p>
+                                <p class="font-semibold text-gray-800">{{ history.model_name }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">分析时间</p>
+                                <p class="font-semibold text-gray-800">{{ history.analysis_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-green-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-tasks text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">任务ID</p>
+                                <p class="font-semibold text-gray-800">{{ history.task_id }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-orange-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-check-circle text-orange-600"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">分析状态</p>
+                                <span class="badge bg-success px-3 py-1 text-sm badge-custom">已完成</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 详细评论结果 -->
+        <div class="card rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center">
+                    <h5 class="mb-3 md:mb-0 font-bold flex items-center">
+                        <i class="fas fa-comments me-2"></i>评论详情
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <input type="radio" class="btn-check" name="filter" id="all" autocomplete="off" checked onclick="filterComments('all')">
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="all">全部</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="positive" autocomplete="off" onclick="filterComments('positive')">
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="positive">正面</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="negative" autocomplete="off" onclick="filterComments('negative')">
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="negative">负面</label>
+                        
+                        <input type="radio" class="btn-check" name="filter" id="neutral" autocomplete="off" onclick="filterComments('neutral')">
+                        <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="neutral">中性</label>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">评论内容</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">情感</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">置信度</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">发布时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comments-table" class="divide-y divide-gray-200">
+                            {% for comment in comments %}
+                            <tr class="comment-row hover:bg-gray-50 transition-colors duration-150" data-sentiment="{{ comment.sentiment_label }}">
+                                <td class="px-4 py-3 text-sm text-gray-800 comment-content" title="{{ comment.content }}">
+                                    <div class="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {{ comment.content }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if comment.sentiment_label == 'positive' %}
+                                        <span class="badge bg-success px-3 py-1 text-sm badge-custom">正面</span>
+                                    {% elif comment.sentiment_label == 'negative' %}
+                                        <span class="badge bg-danger px-3 py-1 text-sm badge-custom">负面</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-1 text-sm badge-custom">中性</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                        <div class="progress-bar 
+                                            {% if comment.sentiment_label == 'positive' %}bg-success
+                                            {% elif comment.sentiment_label == 'negative' %}bg-danger
+                                            {% else %}bg-secondary{% endif %}" 
+                                            style="width: 0%; transition: width 1s ease-in-out;">
+                                            {{ (comment.sentiment_score * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
+                                    {% if comment.created_at %}
+                                        {% if comment.created_at is string %}
+                                            {{ comment.created_at }}
+                                        {% else %}
+                                            {{ comment.created_at.strftime('%m-%d %H:%M') }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 无数据提示 -->
+                {% if comments|length == 0 %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-3"></i>
+                    <p>暂无评论数据</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 初始化动画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 数字滚动动画
+        const totalCount = document.querySelector('.total-count');
+        if (totalCount) {
+            animateValue(totalCount, 0, parseInt(totalCount.textContent), 1500);
+        }
+        
+        const positiveCount = document.querySelector('.positive-count');
+        if (positiveCount) {
+            animateValue(positiveCount, 0, parseInt(positiveCount.textContent), 1500);
+        }
+        
+        const negativeCount = document.querySelector('.negative-count');
+        if (negativeCount) {
+            animateValue(negativeCount, 0, parseInt(negativeCount.textContent), 1500);
+        }
+        
+        const neutralCount = document.querySelector('.neutral-count');
+        if (neutralCount) {
+            animateValue(neutralCount, 0, parseInt(neutralCount.textContent), 1500);
+        }
+        
+        // 进度条动画
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach(bar => {
+                const width = bar.parentElement.getAttribute('style').includes('width') ? 
+                    bar.parentElement.getAttribute('style').split('width:')[1].split(';')[0] : 
+                    '0%';
+                bar.style.width = width;
+            });
+        }, 300);
+    });
+
+    // 评论过滤功能
+    function filterComments(sentiment) {
+        const rows = document.querySelectorAll('.comment-row');
+        
+        rows.forEach(row => {
+            if (sentiment === 'all' || row.dataset.sentiment === sentiment) {
+                row.style.display = '';
+                // 添加淡入动画
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '1';
+                }, 10);
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+</script>
+{% endblock %}

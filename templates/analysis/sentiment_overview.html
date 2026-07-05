@@ -1,0 +1,790 @@
+{% extends "base.html" %}
+
+{% block title %}模型情感正负向分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+        /* 自定义样式 */
+        .card-hover {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .gradient-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            background-size: 200% 200%;
+            animation: gradient 5s ease infinite;
+        }
+        
+        /* 渐变背景卡片样式 */
+        .card-stats-total {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            background-size: 200% 200%;
+            animation: gradient 5s ease infinite;
+            position: relative;
+        }
+        
+        .card-stats-positive {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(17, 153, 142, 0.3);
+            background-size: 200% 200%;
+            animation: gradient 5s ease infinite;
+            position: relative;
+        }
+        
+        .card-stats-negative {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+            background-size: 200% 200%;
+            animation: gradient 5s ease infinite;
+            position: relative;
+        }
+        
+        /* 统计卡片顶部渐变条 */
+        .card-stats-total::before,
+        .card-stats-positive::before,
+        .card-stats-negative::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.5), rgba(255,255,255,0), rgba(255,255,255,0.5));
+            transform: scaleX(0);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-stats-total:hover::before,
+        .card-stats-positive:hover::before,
+        .card-stats-negative:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-outline-custom {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-outline-custom:hover {
+            transform: scale(1.05);
+            color: white !important;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 按钮滑动高亮效果 */
+        .btn-outline-custom::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transform: translateY(-50%);
+            transition: left 0.6s ease;
+        }
+        
+        .btn-outline-custom:hover::after {
+            left: 100%;
+        }
+        
+        /* 进度条样式优化 */
+        .progress {
+            height: 24px;
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #e2e8f0;
+            position: relative;
+        }
+        
+        .progress-bar {
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 进度条闪光效果 */
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: progressShimmer 2s infinite;
+        }
+        
+        .table-custom {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-custom thead {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        /* 表格行悬停动画 */
+        .table-custom tbody tr {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .table-custom tbody tr:hover {
+            background-color: #f8fafc;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .badge-custom {
+            font-weight: 600;
+            padding: 0.35em 0.65em;
+            font-size: 0.8rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .badge-custom:hover {
+            transform: scale(1.05);
+        }
+        
+        .pie-chart-icon {
+            animation: rotate 8s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* 渐变动画 */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 进度条闪光动画 */
+        @keyframes progressShimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 表格滚动条 */
+        .table-responsive::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+        
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 数字动画容器 */
+        .number-animation {
+            display: inline-block;
+            font-weight: 600;
+        }
+        
+        /* 响应式设计优化 */
+        @media (max-width: 768px) {
+            .btn-group {
+                flex-wrap: wrap;
+            }
+            
+            .btn-group label {
+                margin-bottom: 5px;
+            }
+            
+            .comment-content {
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            .row-stats > div {
+                margin-bottom: 1rem;
+            }
+            
+            .card-stats-total,
+            .card-stats-positive,
+            .card-stats-negative {
+                padding: 0.75rem;
+            }
+            
+            .card-stats-total .card-title,
+            .card-stats-positive .card-title,
+            .card-stats-negative .card-title {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* 无数据提示动画 */
+        .no-data-container {
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* 分析信息项悬停效果 */
+        .card-body .bg-gradient-to-br {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-body .bg-gradient-to-br:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 按钮点击波纹效果 */
+        .btn-ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-ripple:after {
+            content: '';
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.5s;
+        }
+        
+        .btn-ripple:active:after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+    </style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- 页面标题和操作按钮 -->
+        <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="mb-3 md:mb-0">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-chart-pie me-2 text-purple-600 pie-chart-icon"></i>模型情感正负向分析
+                </h2>
+                <p class="text-gray-500 mt-1">深入分析评论的情感倾向分布</p>
+            </div>
+            <div>
+                <a href="{{ url_for('analysis.analysis_dashboard', history_id=history.id) }}" class="btn btn-outline-secondary py-2 px-4 rounded-lg shadow-sm flex items-center btn-outline-custom">
+                    <i class="fas fa-arrow-left me-2"></i>返回仪表板
+                </a>
+            </div>
+        </div>
+
+        <!-- 总体统计 -->
+        <div class="row mb-6 row-stats">
+            <div class="col-md-4">
+                <div class="card text-center card-stats-total card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-comment-dots text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">总评论数</h5>
+                        <h2 class="text-4xl font-bold mb-1 total-count number-animation">{{ history.total_comments }}</h2>
+                        <small class="opacity-90">条评论</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center card-stats-positive card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-smile text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">正面情感</h5>
+                        <h2 class="text-4xl font-bold mb-1 positive-count number-animation">{{ history.positive_count }}</h2>
+                        <small class="opacity-90"><span class="positive-rate number-animation">{{ "%.1f"|format(history.positive_count / history.total_comments * 100) }}</span>%</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center card-stats-negative card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-frown text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">负面情感</h5>
+                        <h2 class="text-4xl font-bold mb-1 negative-count number-animation">{{ history.negative_count }}</h2>
+                        <small class="opacity-90"><span class="negative-rate number-animation">{{ "%.1f"|format(history.negative_count / history.total_comments * 100) }}</span>%</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模型信息 -->
+        <div class="card mb-6 rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-robot me-2"></i>模型分析详情
+                </h5>
+            </div>
+            <div class="card-body bg-white p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 p-5 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-brain text-blue-600"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-800">使用模型：</strong>
+                                <span class="badge bg-info px-3 py-1 text-sm badge-custom">{{ history.model_name }}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-800">分析时间：</strong>
+                                <span class="text-gray-600">{{ history.analysis_time.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-teal-50 p-5 rounded-lg">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-thumbs-up text-green-600"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-800">正面率：</strong>
+                                <span class="text-success font-bold text-xl positive-rate-display">{{ "%.1f"|format(history.positive_count / history.total_comments * 100) }}%</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="bg-red-100 p-2 rounded-full mr-3">
+                                <i class="fas fa-thumbs-down text-red-600"></i>
+                            </div>
+                            <div>
+                                <strong class="text-gray-800">负面率：</strong>
+                                <span class="text-danger font-bold text-xl negative-rate-display">{{ "%.1f"|format(history.negative_count / history.total_comments * 100) }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 评论详情 -->
+        <div class="card rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center">
+                    <h5 class="mb-3 md:mb-0 font-bold flex items-center">
+                        <i class="fas fa-comments me-2"></i>评论详情
+                    </h5>
+                    <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="filter" id="all" autocomplete="off" {% if sentiment == 'all' or sentiment is none %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="all">
+                                <a href="{{ url_for('analysis.sentiment_overview', history_id=history.id, sentiment='all', page=1) }}" class="text-white">全部</a>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="filter" id="positive" autocomplete="off" {% if sentiment == 'positive' %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="positive">
+                                <a href="{{ url_for('analysis.sentiment_overview', history_id=history.id, sentiment='positive', page=1) }}" class="text-white">正面</a>
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="filter" id="negative" autocomplete="off" {% if sentiment == 'negative' %}checked{% endif %}>
+                            <label class="btn btn-outline-light btn-sm px-4 py-1 rounded-md btn-outline-custom" for="negative">
+                                <a href="{{ url_for('analysis.sentiment_overview', history_id=history.id, sentiment='negative', page=1) }}" class="text-white">负面</a>
+                            </label>
+                        </div>
+                </div>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">评论内容</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">情感</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">置信度</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">发布时间</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">点赞数</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">地区</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comments-table" class="divide-y divide-gray-200">
+                            {% for comment in comments %}
+                            <tr class="comment-row hover:bg-gray-50 transition-colors duration-150" data-sentiment="{{ comment.sentiment_label }}">
+                                <td class="px-4 py-3 text-sm text-gray-800 comment-content" title="{{ comment.content }}">
+                                    <div class="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {{ comment.content }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if comment.sentiment_label == 'positive' %}
+                                        <span class="badge bg-success px-3 py-1 text-sm badge-custom">正面</span>
+                                    {% else %}
+                                        <span class="badge bg-danger px-3 py-1 text-sm badge-custom">负面</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                        <div class="progress-bar 
+                                            {% if comment.sentiment_label == 'positive' %}bg-success
+                                            {% else %}bg-danger{% endif %}" 
+                                            style="width: 0%; transition: width 1s ease-in-out;">
+                                            {{ (comment.sentiment_score * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
+                                    {% if comment.publish_time %}
+                                        {% if comment.publish_time is string %}
+                                            {{ comment.publish_time }}
+                                        {% else %}
+                                            {{ comment.publish_time.strftime('%m-%d %H:%M') }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 like-count">{{ comment.like_count or 0 }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-800">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-pin text-purple-600 me-1"></i>
+                                        <span>{{ comment.ip_location or '-' }}</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页导航 -->
+                {% if pagination %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.sentiment_overview', history_id=history.id, page=pagination.page-1, sentiment=sentiment) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        
+                        <!-- 显示首页 -->
+                        <li class="page-item {% if pagination.page == 1 %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.sentiment_overview', history_id=history.id, page=1, sentiment=sentiment) }}">1</a>
+                        </li>
+                        
+                        <!-- 显示当前页附近的页码 -->
+                        {% set show_pages = 3 %}
+                        {% set start_page = (2 if pagination.page - show_pages < 2 else pagination.page - show_pages) %}
+                        {% set end_page = (pagination.pages - 1 if pagination.page + show_pages > pagination.pages - 1 else pagination.page + show_pages) %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if start_page > 2 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.sentiment_overview', history_id=history.id, page=page_num, sentiment=sentiment) }}">{{ page_num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if end_page < pagination.pages - 1 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        <!-- 显示末页 -->
+                        {% if pagination.pages > 1 %}
+                        <li class="page-item {% if pagination.page == pagination.pages %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.sentiment_overview', history_id=history.id, page=pagination.pages, sentiment=sentiment) }}">{{ pagination.pages }}</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.sentiment_overview', history_id=history.id, page=pagination.page+1, sentiment=sentiment) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+                
+                <!-- 无数据提示 -->
+        {% if comments|length == 0 %}
+        <div class="text-center py-12 px-4 bg-gray-50 rounded-xl my-4 no-data-container animate-fade-in">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-sm mb-4">
+                <i class="fas fa-comment-slash text-pink-500 text-2xl"></i>
+            </div>
+            <h4 class="text-gray-700 font-medium text-lg mb-2">暂无评论数据</h4>
+            <p class="text-gray-500 max-w-md mx-auto">当前分析任务没有找到相关评论，可能是因为原始数据为空或分析过程中出现异常。</p>
+        </div>
+        {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 百分比滚动动画
+    function animatePercentage(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = progress * (end - start) + start;
+            element.textContent = value.toFixed(1);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 初始化动画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 数字滚动动画
+        // 总评论数
+        const totalCount = document.querySelector('.total-count');
+        if (totalCount) {
+            animateValue(totalCount, 0, parseInt(totalCount.textContent), 1500);
+        }
+        
+        // 正面评论数
+        const positiveCount = document.querySelector('.positive-count');
+        if (positiveCount) {
+            animateValue(positiveCount, 0, parseInt(positiveCount.textContent), 1500);
+        }
+        
+        // 负面评论数
+        const negativeCount = document.querySelector('.negative-count');
+        if (negativeCount) {
+            animateValue(negativeCount, 0, parseInt(negativeCount.textContent), 1500);
+        }
+        
+        // 正面率
+        const positiveRate = document.querySelector('.positive-rate');
+        if (positiveRate) {
+            animatePercentage(positiveRate, 0, parseFloat(positiveRate.textContent), 1500);
+        }
+        
+        // 负面率
+        const negativeRate = document.querySelector('.negative-rate');
+        if (negativeRate) {
+            animatePercentage(negativeRate, 0, parseFloat(negativeRate.textContent), 1500);
+        }
+        
+        // 模型信息区域的百分比动画
+        setTimeout(() => {
+            const positiveRateDisplay = document.querySelector('.positive-rate-display');
+            if (positiveRateDisplay) {
+                const rate = parseFloat(positiveRateDisplay.textContent);
+                positiveRateDisplay.textContent = '0%';
+                animatePercentage(positiveRateDisplay, 0, rate, 1500);
+            }
+            
+            const negativeRateDisplay = document.querySelector('.negative-rate-display');
+            if (negativeRateDisplay) {
+                const rate = parseFloat(negativeRateDisplay.textContent);
+                negativeRateDisplay.textContent = '0%';
+                animatePercentage(negativeRateDisplay, 0, rate, 1500);
+            }
+        }, 500);
+        
+        // 评论表格中的进度条动画
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach((bar, index) => {
+                // 延迟每个进度条的动画开始时间，创造顺序效果
+                setTimeout(() => {
+                    // 直接从progress-bar元素获取文本内容设置宽度
+                    const width = bar.textContent.split('%')[0] + '%';
+                    bar.style.width = width;
+                }, index * 50);
+            });
+        }, 1000);
+        
+        // 评论表格中的点赞数动画
+        setTimeout(() => {
+            document.querySelectorAll('.like-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+        }, 1500);
+    });
+
+    // 情感过滤功能
+    function filterComments(sentiment) {
+        const rows = document.querySelectorAll('.comment-row');
+        const paginationContainer = document.querySelector('nav[aria-label="Page navigation"]');
+        const filterInfoContainer = document.getElementById('filter-info') || createFilterInfoContainer();
+        
+        // 显示所有评论时，恢复分页导航
+        if (sentiment === 'all') {
+            if (paginationContainer) paginationContainer.style.display = '';
+            if (filterInfoContainer) filterInfoContainer.style.display = 'none';
+        } else {
+            // 筛选时隐藏分页导航，显示筛选提示
+            if (paginationContainer) paginationContainer.style.display = 'none';
+            if (filterInfoContainer) {
+                filterInfoContainer.style.display = 'block';
+                const sentimentText = sentiment === 'positive' ? '正面' : sentiment === 'negative' ? '负面' : '中性';
+                filterInfoContainer.textContent = `已筛选显示${sentimentText}评论，当前显示的是当前页中符合条件的评论。`;
+            }
+        }
+        
+        let visibleCount = 0;
+        rows.forEach(row => {
+            if (sentiment === 'all' || row.dataset.sentiment === sentiment) {
+                row.style.display = '';
+                visibleCount++;
+                // 添加淡入动画
+                row.style.opacity = '0';
+                setTimeout(() => {
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '1';
+                }, 10);
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // 如果筛选后没有可见评论，显示提示
+        const noDataMsg = document.querySelector('.no-filter-data');
+        if (visibleCount === 0 && sentiment !== 'all') {
+            if (!noDataMsg) {
+                const msg = document.createElement('div');
+                msg.className = 'no-filter-data text-center py-8 text-gray-500';
+                msg.innerHTML = '<i class="fas fa-info-circle text-4xl mb-3"></i><p>当前筛选条件下暂无评论数据</p>';
+                rows[0].parentNode.parentNode.parentNode.appendChild(msg);
+            } else {
+                noDataMsg.style.display = 'block';
+            }
+        } else if (noDataMsg) {
+            noDataMsg.style.display = 'none';
+        }
+    }
+     
+     // 创建筛选提示容器
+     function createFilterInfoContainer() {
+         const container = document.createElement('div');
+         container.id = 'filter-info';
+         container.className = 'bg-info bg-opacity-10 border border-info rounded-md p-3 text-info text-sm mt-4 mb-2';
+         container.style.display = 'none';
+         const paginationNav = document.querySelector('nav[aria-label="Page navigation"]');
+         if (paginationNav) {
+             paginationNav.parentNode.insertBefore(container, paginationNav);
+         }
+         return container;
+     }
+</script>
+{% endblock %}

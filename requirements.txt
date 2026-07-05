@@ -1,0 +1,54 @@
+# Flask web framework dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.3
+PyMySQL==1.1.0
+
+# Core dependencies
+httpx
+tqdm
+requests
+cookiesparser
+PyExecJS
+mysql-connector-python
+contourpy==1.3.1
+cycler==0.12.1
+fonttools==4.55.0
+gensim==4.3.3
+jieba==0.42.1
+joblib==1.4.2
+kiwisolver==1.4.7
+matplotlib==3.9.2
+numpy==1.26.4
+packaging==24.2
+pandas==2.2.3
+pillow==11.0.0
+pyparsing==3.2.0
+python-dateutil==2.9.0.post0
+pytz==2024.2
+scikit-learn==1.5.2
+scipy==1.13.1
+setuptools==75.1.0
+six==1.16.0
+smart-open==7.0.5
+threadpoolctl==3.5.0
+tzdata==2024.2
+wheel==0.44.0
+wordcloud==1.9.4
+wrapt==1.17.0
+zai-sdk==0.0.3
+
+cryptography
+
+# Big Data dependencies for HDFS/Hive integration
+# 注意：hdfs3在Python 3.10+可能有兼容性问题，请先运行 fix_compatibility.py
+hdfs3==0.3.1
+pyhive==0.7.0
+thrift==0.16.0
+pure-sasl==0.6.2
+thrift-sasl==0.4.3
+
+# Deep learning dependencies for BERT models
+torch==2.2.1
+transformers==4.38.2
+accelerate==0.28.0

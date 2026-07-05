@@ -1,0 +1,628 @@
+{% extends "base.html" %}
+
+{% block title %}地域情感倾向分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义样式 */
+    .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .gradient-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .card-stats-globe {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .card-stats-active {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+    }
+    
+    .card-stats-positive {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: transform 0.2s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: scale(1.05);
+    }
+    
+    .btn-outline-custom {
+        transition: all 0.3s ease;
+    }
+    
+    .btn-outline-custom:hover {
+        transform: scale(1.05);
+        color: white !important;
+    }
+    
+    .insight-card {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .insight-card:hover {
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+        transition: width 1s ease-in-out;
+    }
+    
+    .table-custom {
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .table-custom thead {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .badge-custom {
+        font-weight: 600;
+        padding: 0.35em 0.65em;
+        font-size: 0.8rem;
+    }
+    
+    .progress-bar {
+        transition: width 1s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .map-pin-icon {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 0.7;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    /* 响应式设计优化 */
+    @media (max-width: 768px) {
+        .btn-group {
+            flex-wrap: wrap;
+        }
+        
+        .btn-group label {
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .row-stats > div {
+            margin-bottom: 1rem;
+        }
+    }
+</style>
+
+<div class="row">
+    <div class="col-12">
+        <!-- 页面标题和操作按钮 -->
+        <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <div class="mb-3 md:mb-0">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-map-marker-alt me-2 text-purple-600 map-pin-icon"></i>地域情感倾向分析
+                </h2>
+                <p class="text-gray-500 mt-1">分析不同地区用户的情感表达特征</p>
+            </div>
+            <div>
+                <a href="{{ url_for('analysis.analysis_dashboard', history_id=history.id) }}" class="btn btn-outline-secondary py-2 px-4 rounded-lg shadow-sm flex items-center btn-outline-custom">
+                    <i class="fas fa-arrow-left me-2"></i>返回仪表板
+                </a>
+            </div>
+        </div>
+
+        <!-- 地域统计概览 -->
+        <div class="row mb-6 row-stats">
+            <div class="col-md-4">
+                <div class="card text-center card-stats-globe card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-globe text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">覆盖地区数</h5>
+                        <h2 class="text-xl font-bold mb-1 most-active-location">{{ location_stats|length }}</h2>
+                        <small class="opacity-90">个不同地区</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-stats-active card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-map text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">最活跃地区</h5>
+                        {% if most_active_location %}
+                            <h6 class="text-xl font-bold mb-1 most-active-location">{{ most_active_location }}</h6>
+                            <small class="opacity-90"><span class="active-comments">{{ location_stats[most_active_location]['total'] }}</span> 条评论</small>
+                        {% else %}
+                            <h6 class="text-lg opacity-90">暂无数据</h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-center card-stats-positive card-hover">
+                    <div class="card-body p-5">
+                        <div class="flex justify-center mb-3">
+                            <i class="fas fa-smile text-4xl opacity-90"></i>
+                        </div>
+                        <h5 class="card-title text-sm uppercase tracking-wider opacity-90 mb-2">最正面地区</h5>
+                        {% if most_positive_location %}
+                            <h6 class="text-xl font-bold mb-1 most-positive-location">{{ most_positive_location }}</h6>
+                            <small class="opacity-90"><span class="positive-rate">{{ "%.1f"|format(highest_positive_rate) }}</span>% 正面率</small>
+                        {% else %}
+                            <h6 class="text-lg opacity-90">暂无数据</h6>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地域分析洞察 -->
+        <div class="card mb-6 insight-card">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-lightbulb me-2"></i>地域分析洞察
+                </h5>
+            </div>
+            <div class="card-body bg-white p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-purple-50 to-blue-50 p-5 rounded-lg">
+                        <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-chart-pie text-purple-600 mr-2"></i>分析维度
+                        </h6>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-city text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">地域文化：</span>
+                                    <span class="text-gray-600">不同地区的文化背景影响情感表达</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-chart-line text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">经济水平：</span>
+                                    <span class="text-gray-600">经济发达地区情感表达可能更积极</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-users text-blue-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-800">用户群体：</span>
+                                    <span class="text-gray-600">不同地区用户年龄结构和兴趣不同</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-teal-50 p-5 rounded-lg">
+                        <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-map-marker-alt text-green-600 mr-2"></i>地域特征
+                        </h6>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-green-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-city text-green-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">一线城市用户表达更理性客观</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-green-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-building text-green-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">二三线城市用户情感表达更直接</span>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-green-100 p-1.5 rounded-full mr-3 mt-0.5">
+                                    <i class="fas fa-globe-asia text-green-600 text-xs"></i>
+                                </div>
+                                <div>
+                                    <span class="text-gray-600">地域差异反映了文化多样性</span>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地域统计表格 -->
+        <div class="card mb-6 rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <h5 class="mb-0 font-bold flex items-center">
+                    <i class="fas fa-chart-bar me-2"></i>各地区情感统计
+                </h5>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">地区</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">总评论数</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">正面评论</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">负面评论</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">正面率</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">活跃度</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for location, stats in location_stats.items() %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-4 py-3 text-sm">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-pin text-purple-600 me-2 map-pin-icon"></i>
+                                        <strong class="text-gray-800">{{ location }}</strong>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 total-count">{{ stats['total'] }}</td>
+                                <td class="px-4 py-3 text-sm">
+                                    <span class="text-success font-bold positive-count">{{ stats['positive'] }}</span>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    <span class="text-danger font-bold negative-count">{{ stats['negative'] }}</span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                        {% set positive_rate = (stats['positive'] / stats['total'] * 100) if stats['total'] > 0 else 0 %}
+                                        <div class="progress-bar progress-bar-location-rate bg-success" style="width: 0%; transition: width 1s ease-in-out;">
+                                            {{ "%.1f"|format(positive_rate) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if stats['total'] >= 10 %}
+                                        <span class="badge bg-success px-3 py-1 text-sm badge-custom">高</span>
+                                    {% elif stats['total'] >= 5 %}
+                                        <span class="badge bg-warning px-3 py-1 text-sm badge-custom">中</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary px-3 py-1 text-sm badge-custom">低</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 无数据提示 -->
+                {% if location_stats|length == 0 %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-3"></i>
+                    <p>暂无地域数据</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 按地域分组的评论列表 -->
+        <div class="card rounded-lg shadow-lg overflow-hidden">
+            <div class="gradient-header">
+                <div class="d-flex flex-column md:flex-row justify-between align-items-start md:align-items-center">
+                    <h5 class="mb-3 md:mb-0 font-bold flex items-center">
+                        <i class="fas fa-list me-2"></i>按地域分组的评论
+                    </h5>
+                    <div class="btn-group flex-wrap overflow-x-auto" role="group" style="max-width: 100%;">
+                            <a href="{{ url_for('analysis.location_analysis', history_id=history.id, location='all') }}" class="btn btn-outline-light btn-sm px-3 py-1 mr-2 mb-2 rounded-md btn-outline-custom {% if location_filter == 'all' %}active{% endif %}">全部地区</a>
+                            
+                            {% for location in location_stats.keys()|list|sort %}
+                            <a href="{{ url_for('analysis.location_analysis', history_id=history.id, location=location) }}" class="btn btn-outline-light btn-sm px-3 py-1 mr-2 mb-2 rounded-md btn-outline-custom {% if location_filter == location %}active{% endif %}">{{ location }}</a>
+                            {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="card-body bg-white p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover table-custom">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">地区</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">评论内容</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">情感</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">置信度</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">点赞数</th>
+                                <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider">发布时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="location-comments-table" class="divide-y divide-gray-200">
+                            {% for comment in comments %}
+                            {% if comment.ip_location %}
+                            <tr class="location-comment-row hover:bg-gray-50 transition-colors duration-150" data-location="{{ comment.ip_location }}">
+                                <td class="px-4 py-3 text-sm">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-pin text-purple-600 me-2 map-pin-icon"></i>
+                                        <span class="font-bold text-gray-800">{{ comment.ip_location }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 comment-content" title="{{ comment.content }}">
+                                    <div class="max-w-xs overflow-hidden text-ellipsis whitespace-nowrap">
+                                        {{ comment.content }}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm">
+                                    {% if comment.sentiment_label == 'positive' %}
+                                        <span class="badge bg-success px-3 py-1 text-sm badge-custom">正面</span>
+                                    {% else %}
+                                        <span class="badge bg-danger px-3 py-1 text-sm badge-custom">负面</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="progress rounded-full overflow-hidden" style="height: 24px;">
+                                        <div class="progress-bar progress-bar-location-comment
+                                            {% if comment.sentiment_label == 'positive' %}bg-success
+                                            {% else %}bg-danger{% endif %}" 
+                                            style="width: 0%; transition: width 1s ease-in-out;">
+                                            {{ (comment.sentiment_score * 100)|round(1) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-800 like-count">{{ comment.like_count or 0 }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-600">
+                                    {% if comment.publish_time %}
+                                        {% if comment.publish_time is string %}
+                                            {{ comment.publish_time }}
+                                        {% else %}
+                                            {{ comment.publish_time.strftime('%m-%d %H:%M') }}
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 无数据提示 -->
+                {% if comments|selectattr('ip_location')|list|length == 0 %}
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-info-circle text-4xl mb-3"></i>
+                    <p>暂无地域评论数据</p>
+                </div>
+                {% endif %}
+                
+                <!-- 分页导航 -->
+                {% if pagination %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item {% if pagination.page == 1 %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.location_analysis', history_id=history.id, page=pagination.page-1, location=location_filter) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        
+                        <!-- 显示首页 -->
+                        <li class="page-item {% if pagination.page == 1 %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.location_analysis', history_id=history.id, page=1, location=location_filter) }}">1</a>
+                        </li>
+                        
+                        <!-- 显示当前页附近的页码 -->
+                        {% set show_pages = 3 %}
+                        {% set start_page = (2 if pagination.page - show_pages < 2 else pagination.page - show_pages) %}
+                        {% set end_page = (pagination.pages - 1 if pagination.page + show_pages > pagination.pages - 1 else pagination.page + show_pages) %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if start_page > 2 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        {% for page_num in range(start_page, end_page + 1) %}
+                        <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.location_analysis', history_id=history.id, page=page_num, location=location_filter) }}">{{ page_num }}</a>
+                        </li>
+                        {% endfor %}
+                        
+                        <!-- 如果有省略号，显示... -->
+                        {% if end_page < pagination.pages - 1 %}
+                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                        
+                        <!-- 显示末页 -->
+                        {% if pagination.pages > 1 %}
+                        <li class="page-item {% if pagination.page == pagination.pages %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.location_analysis', history_id=history.id, page=pagination.pages, location=location_filter) }}">{{ pagination.pages }}</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item {% if pagination.page == pagination.pages %}disabled{% endif %}">
+                            <a class="page-link" href="{{ url_for('analysis.location_analysis', history_id=history.id, page=pagination.page+1, location=location_filter) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 百分比滚动动画
+    function animatePercentage(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = progress * (end - start) + start;
+            element.textContent = value.toFixed(1);
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 初始化动画
+    document.addEventListener('DOMContentLoaded', function() {
+        // 数字滚动动画
+        // 地区数量
+        const locationCount = document.querySelector('.location-count');
+        if (locationCount) {
+            animateValue(locationCount, 0, parseInt(locationCount.textContent), 1500);
+        }
+        
+        // 最活跃地区评论数
+        const activeComments = document.querySelector('.active-comments');
+        if (activeComments) {
+            animateValue(activeComments, 0, parseInt(activeComments.textContent), 1500);
+        }
+        
+        // 最正面地区正面率
+        const positiveRate = document.querySelector('.positive-rate');
+        if (positiveRate) {
+            animatePercentage(positiveRate, 0, parseFloat(positiveRate.textContent), 1500);
+        }
+        
+        // 地域统计表格数字动画
+        setTimeout(() => {
+            document.querySelectorAll('.total-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+            
+            document.querySelectorAll('.positive-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+            
+            document.querySelectorAll('.negative-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+        }, 500);
+        
+        // 地域统计表格进度条动画
+        setTimeout(() => {
+            document.querySelectorAll('.progress-bar').forEach((bar, index) => {
+                // 延迟每个进度条的动画开始时间，创造顺序效果
+                setTimeout(() => {
+                    // 从progress-bar元素获取文本内容并正确处理
+                    const width = bar.textContent.split('%')[0] + '%';
+                    bar.style.width = width;
+                }, index * 100);
+            });
+        }, 1000);
+        
+        // 评论表格中的点赞数动画
+        setTimeout(() => {
+            document.querySelectorAll('.like-count').forEach(element => {
+                animateValue(element, 0, parseInt(element.textContent), 1000);
+            });
+        }, 1500);
+    });
+
+    // 地域过滤功能
+
+</script>
+{% endblock %}

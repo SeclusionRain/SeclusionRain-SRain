@@ -1,0 +1,1625 @@
+{% extends "base.html" %}
+
+{% block title %}预测 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block head %}
+<!-- Markdown 渲染 -->
+<script src="https://cdn.jsdelivr.net/npm/marked@5.1.1/marked.min.js"></script>
+<!-- Mermaid 图表 -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+<!-- 代码高亮 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+<!-- ECharts 图表库 -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">智能预测</h1>
+        <p class="text-gray-600">基于机器学习的智能预测分析，生成洞察报告和情感传播路径</p>
+    </div>
+
+    <!-- 三个板块导航 -->
+    <div class="bg-gray-50 rounded-lg shadow-md border border-gray-200 mb-6">
+        <div class="border-b border-gray-200">
+            <nav class="flex space-x-8 px-6" aria-label="Tabs">
+                <button onclick="showTab('insight')" id="insight-tab" class="tab-button relative border-b-2 border-gray-400 text-gray-700 bg-white py-4 px-4 text-sm font-medium rounded-t-lg shadow-sm transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5">
+                    内容传播
+                </button>
+                <button onclick="showTab('propagation')" id="propagation-tab" class="tab-button relative border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-4 text-sm font-medium rounded-t-lg transition-all duration-300 ease-in-out transform hover:shadow-sm hover:-translate-y-0.5 hover:bg-gray-50">
+                    商业转化
+                </button>
+                <button onclick="showTab('behavior')" id="behavior-tab" class="tab-button relative border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-4 text-sm font-medium rounded-t-lg transition-all duration-300 ease-in-out transform hover:shadow-sm hover:-translate-y-0.5 hover:bg-gray-50">
+                    用户行为
+                </button>
+                <button onclick="showTab('sentiment-spread')" id="sentiment-spread-tab" class="tab-button relative border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-4 text-sm font-medium rounded-t-lg transition-all duration-300 ease-in-out transform hover:shadow-sm hover:-translate-y-0.5 hover:bg-gray-50">
+                    情感传播
+                </button>
+                <button onclick="showTab('chat')" id="chat-tab" class="tab-button relative border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-4 px-4 text-sm font-medium rounded-t-lg transition-all duration-300 ease-in-out transform hover:shadow-sm hover:-translate-y-0.5 hover:bg-gray-50">
+                    AI 自由对话
+                </button>
+            </nav>
+        </div>
+
+        <!-- 板块内容 -->
+        <div class="tab-content" id="aiTabContent">
+            <!-- 内容传播预测板块 -->
+            <div id="insight-content" class="tab-content p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左侧：数据选择 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-share-alt mr-2 text-blue-600"></i>传播预测设置
+                            </h3>
+                            <div>
+                                <label for="insightDataSelect" class="block text-sm font-medium text-gray-700 mb-2">选择数据源</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="insightDataSelect" required>
+                                    <option value="">请选择数据</option>
+                                </select>
+                            </div>
+                            <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center mt-4" id="generateInsightBtn">
+                                <i class="fas fa-rocket mr-2"></i>生成内容传播预测
+                            </button>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-3">
+                                <h4 class="text-sm font-semibold text-blue-800 mb-2">
+                                    <i class="fas fa-info-circle mr-1"></i>预测说明
+                                </h4>
+                                <p class="text-xs text-blue-700">AI将分析内容传播潜力、受众覆盖范围、传播路径和病毒式传播可能性。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：报告内容 -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-chart-line mr-2 text-gray-600"></i>内容传播预测
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="insightReport" class="markdown-content">
+                                    <div class="text-center text-gray-500 py-12">
+                                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-rocket text-2xl text-blue-600"></i>
+                                        </div>
+                                        <p>选择数据源并点击生成按钮来获取内容传播预测报告</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 商业转化预测板块 -->
+            <div id="propagation-content" class="tab-content p-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左侧：转化分析控制 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-dollar-sign mr-2 text-purple-600"></i>转化预测设置
+                            </h3>
+                            <div>
+                                <label for="propagationDataSelect" class="block text-sm font-medium text-gray-700 mb-2">选择数据源</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" id="propagationDataSelect" required>
+                                    <option value="">请选择数据</option>
+                                </select>
+                            </div>
+                            <button class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center mt-4" id="generatePropagationBtn">
+                                <i class="fas fa-chart-line mr-2"></i>生成商业转化预测
+                            </button>
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mt-3">
+                                <h4 class="text-sm font-semibold text-purple-800 mb-2">
+                                    <i class="fas fa-info-circle mr-1"></i>预测说明
+                                </h4>
+                                <p class="text-xs text-purple-700">AI将分析用户转化意向、购买决策因素、潜在客户识别和转化优化建议。</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-lg border border-gray-100">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-xl border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-shopping-cart mr-2 text-gray-600"></i>商业转化预测
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="propagationReport" class="markdown-content">
+                                    <div class="text-center text-gray-500 py-12">
+                                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-dollar-sign text-2xl text-purple-600"></i>
+                                        </div>
+                                        <p>选择数据源并点击生成按钮来获取商业转化预测分析</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 情感传播预测板块 -->
+            <div id="sentiment-spread-content" class="tab-content p-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左侧：预测设置 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-project-diagram mr-2 text-pink-600"></i>传播预测设置
+                            </h3>
+                            <div class="mb-4">
+                                <label for="sentimentSpreadDataSelect" class="block text-sm font-medium text-gray-700 mb-2">选择数据源</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" id="sentimentSpreadDataSelect" required>
+                                    <option value="">请选择数据</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="spreadModel" class="block text-sm font-medium text-gray-700 mb-2">预测模型</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" id="spreadModel">
+                                    <option value="time_series">时间序列预测</option>
+                                    <option value="propagation">传播力度预测</option>
+                                    <option value="geographic">地域传播分析</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">选择预测维度分析情感传播规律</p>
+                            </div>
+                            <div class="mb-4">
+                                <label for="spreadAlgorithm" class="block text-sm font-medium text-gray-700 mb-2">算法选择</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent" id="spreadAlgorithm">
+                                    <option value="linear_regression">线性回归</option>
+                                    <option value="ridge">岭回归</option>
+                                    <option value="random_forest_regressor">随机森林回归</option>
+                                    <option value="gradient_boosting">梯度提升</option>
+                                </select>
+                            </div>
+                            <button class="w-full bg-pink-600 hover:bg-pink-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center mb-3" id="generateSpreadBtn">
+                                <i class="fas fa-share-alt mr-2"></i>生成传播预测
+                            </button>
+                            <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-pink-800 mb-2">
+                                    <i class="fas fa-info-circle mr-1"></i>预测说明
+                                </h4>
+                                <p class="text-xs text-pink-700">基于时间、互动、地域等多维度数据，预测情感的传播趋势和影响范围。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：预测结果展示 -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-wave-square mr-2 text-gray-600"></i>情感传播预测结果
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="sentimentSpreadResult">
+                                    <div class="text-center text-gray-500 py-12">
+                                        <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-chart-line text-2xl text-pink-600"></i>
+                                        </div>
+                                        <p>选择数据源和预测模型，点击生成按钮来获取情感传播预测</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ECharts可视化区域 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-chart-area mr-2 text-gray-600"></i>传播趋势可视化
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="sentimentSpreadCharts" style="min-height: 400px;">
+                                    <div class="text-center text-gray-400 py-12">
+                                        <i class="fas fa-chart-line text-4xl mb-3"></i>
+                                        <p>预测结果将在此显示趋势图表</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 用户行为预测板块 -->
+            <div id="behavior-content" class="tab-content p-6 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- 左侧：预测设置 -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-brain mr-2 text-indigo-600"></i>预测设置
+                            </h3>
+                            <div class="mb-4">
+                                <label for="behaviorDataSelect" class="block text-sm font-medium text-gray-700 mb-2">选择数据源</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" id="behaviorDataSelect" required>
+                                    <option value="">请选择数据</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label for="mlModel" class="block text-sm font-medium text-gray-700 mb-2">选择算法</label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" id="mlModel">
+                                    <option value="logistic">逻辑回归</option>
+                                    <option value="random_forest">随机森林</option>
+                                    <option value="decision_tree">决策树</option>
+                                    <option value="naive_bayes">朴素贝叶斯</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">选择机器学习算法进行用户行为预测</p>
+                            </div>
+                            <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center mb-3" id="generateBehaviorBtn">
+                                <i class="fas fa-chart-line mr-2"></i>生成行为预测
+                            </button>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-blue-800 mb-2">
+                                    <i class="fas fa-info-circle mr-1"></i>预测说明
+                                </h4>
+                                <p class="text-xs text-blue-700">基于点赞、评论、转发等互动数据，预测用户的活跃度和参与意愿。</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧：预测结果展示 -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-4">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-chart-bar mr-2 text-gray-600"></i>用户行为预测结果
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="behaviorResult">
+                                    <div class="text-center text-gray-500 py-12">
+                                        <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <i class="fas fa-users text-2xl text-indigo-600"></i>
+                                        </div>
+                                        <p>选择数据源和算法，点击生成按钮来获取用户行为预测</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ECharts可视化区域 -->
+                        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <div class="bg-gray-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-chart-pie mr-2 text-gray-600"></i>可视化分析
+                                </h3>
+                            </div>
+                            <div class="p-6">
+                                <div id="behaviorCharts" style="min-height: 400px;">
+                                    <div class="text-center text-gray-400 py-12">
+                                        <i class="fas fa-chart-area text-4xl mb-3"></i>
+                                        <p>预测结果将在此显示图表</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI 自由对话板块 -->
+            <div id="chat-content" class="tab-content p-6 hidden">
+                <div class="max-w-5xl mx-auto">
+                    <!-- 对话历史区域 -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm mb-4">
+                        <div class="bg-gradient-to-r from-green-50 to-blue-50 px-6 py-4 rounded-t-lg border-b border-gray-200">
+                            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                                <i class="fas fa-comments mr-2 text-green-600"></i>AI 对话助手
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div id="chatHistory" class="space-y-4" style="min-height: 400px; max-height: 600px; overflow-y: auto;">
+                                <div class="flex items-start space-x-3">
+                                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-robot text-green-600"></i>
+                                    </div>
+                                    <div class="flex-1 bg-gray-50 rounded-lg p-4">
+                                        <p class="text-gray-800">你好！我是你的 AI 情感分析助手。我可以帮你分析评论数据、解答疑问，或者进行任何你想聊的话题。你可以选择下方的数据源，让对话更有针对性哦！</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <div class="p-6">
+                            <div class="mb-4">
+                                <label for="chatDataSource" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-database mr-1"></i>选择数据源（可选）
+                                </label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" id="chatDataSource">
+                                    <option value="">不指定数据源</option>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">选择数据源后，AI 将结合该数据进行分析</p>
+                            </div>
+                            <div class="flex space-x-3">
+                                <div class="flex-1">
+                                    <textarea id="chatInput" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none" rows="3" placeholder="输入你想问的问题"></textarea>
+                                </div>
+                                <div class="flex flex-col space-y-2">
+                                    <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center" id="sendChatBtn">
+                                        <i class="fas fa-paper-plane mr-2"></i>发送
+                                    </button>
+                                    <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-colors duration-200 flex items-center justify-center" id="clearChatBtn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between mt-3">
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-info-circle mr-1"></i>按 Ctrl+Enter 快速发送
+                                </div>
+                                <div class="text-xs text-gray-500">
+                                    <i class="fas fa-shield-alt mr-1"></i>AI 生成内容仅供参考
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化 Mermaid
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    
+    // 获取DOM元素
+    const insightDataSelect = document.getElementById('insightDataSelect');
+    const propagationDataSelect = document.getElementById('propagationDataSelect');
+    const generateInsightBtn = document.getElementById('generateInsightBtn');
+    const generatePropagationBtn = document.getElementById('generatePropagationBtn');
+    const insightReport = document.getElementById('insightReport');
+    const propagationReport = document.getElementById('propagationReport');
+    const behaviorDataSelect = document.getElementById('behaviorDataSelect');
+    const mlModel = document.getElementById('mlModel');
+    const generateBehaviorBtn = document.getElementById('generateBehaviorBtn');
+    const behaviorResult = document.getElementById('behaviorResult');
+    const behaviorCharts = document.getElementById('behaviorCharts');
+    const sentimentSpreadDataSelect = document.getElementById('sentimentSpreadDataSelect');
+    const spreadModel = document.getElementById('spreadModel');
+    const spreadAlgorithm = document.getElementById('spreadAlgorithm');
+    const generateSpreadBtn = document.getElementById('generateSpreadBtn');
+    const sentimentSpreadResult = document.getElementById('sentimentSpreadResult');
+    const sentimentSpreadCharts = document.getElementById('sentimentSpreadCharts');
+    
+    // 聊天相关 DOM 元素
+    const chatDataSource = document.getElementById('chatDataSource');
+    const chatInput = document.getElementById('chatInput');
+    const chatHistory = document.getElementById('chatHistory');
+    const sendChatBtn = document.getElementById('sendChatBtn');
+    const clearChatBtn = document.getElementById('clearChatBtn');
+
+    // 加载数据源列表
+    loadDataSources();
+
+    // 加载数据源
+    async function loadDataSources() {
+        try {
+            const response = await fetch('/ai/data_sources');
+            const data = await response.json();
+            
+            const selects = [insightDataSelect, propagationDataSelect, behaviorDataSelect, sentimentSpreadDataSelect, chatDataSource];
+            selects.forEach(select => {
+                // 清空现有选项（保留第一个默认选项）
+                while (select.children.length > 1) {
+                    select.removeChild(select.lastChild);
+                }
+                
+                // 添加数据源选项
+                data.forEach(source => {
+                    const option = document.createElement('option');
+                    option.value = source.id;
+                    option.textContent = `${source.video_title} (${source.comment_count}条评论)`;
+                    select.appendChild(option);
+                });
+            });
+        } catch (error) {
+            console.error('加载数据源失败:', error);
+        }
+    }
+
+    // 渲染Markdown内容
+    function renderMarkdown(content, container) {
+        // 使用marked渲染markdown
+        const html = marked.parse(content);
+        container.innerHTML = html;
+        
+        // 渲染Mermaid图表
+        const mermaidElements = container.querySelectorAll('code.language-mermaid, pre code.language-mermaid');
+        mermaidElements.forEach((element, index) => {
+            const mermaidCode = element.textContent;
+            const mermaidId = `mermaid-${Date.now()}-${index}`;
+            
+            // 创建mermaid容器
+            const mermaidDiv = document.createElement('div');
+            mermaidDiv.id = mermaidId;
+            mermaidDiv.className = 'mermaid-diagram';
+            
+            // 替换原来的code元素或其父元素
+            if (element.tagName === 'CODE' && element.parentElement.tagName === 'PRE') {
+                element.parentElement.replaceWith(mermaidDiv);
+            } else {
+                element.replaceWith(mermaidDiv);
+            }
+            
+            // 渲染mermaid图表
+            try {
+                // 清理mermaid代码，移除可能导致解析错误的字符
+                const cleanedCode = mermaidCode
+                    .replace(/[\u201c\u201d]/g, '"')  // 替换中文引号
+                    .replace(/[\u2018\u2019]/g, "'")  // 替换中文单引号
+                    .replace(/\n\s*\n/g, '\n')       // 移除多余空行
+                    .trim();
+                
+                mermaid.render(mermaidId + '-svg', cleanedCode).then(({svg}) => {
+                    mermaidDiv.innerHTML = svg;
+                }).catch(error => {
+                    console.error('Mermaid rendering error:', error);
+                    mermaidDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>图表渲染失败</strong><br>
+                            <small>错误信息: ${error.message}</small><br>
+                            <details class="mt-2">
+                                <summary>查看原始代码</summary>
+                                <pre class="mt-2 small"><code>${cleanedCode}</code></pre>
+                            </details>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Mermaid rendering error:', error);
+                mermaidDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>图表渲染失败</strong><br>
+                        <small>错误信息: ${error.message}</small>
+                    </div>
+                `;
+            }
+        });
+        
+        // 代码高亮
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAllUnder(container);
+        }
+    }
+
+    // 生成洞察报告
+    async function generateInsightReport() {
+        const selectedData = insightDataSelect.value;
+        if (!selectedData) {
+            alert('请先选择数据源');
+            return;
+        }
+
+        generateInsightBtn.disabled = true;
+        generateInsightBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+        
+        insightReport.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                <p>AI正在分析数据，生成内容传播预测报告，可能需要一分钟左右...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/ai/generate_insight', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data_source: selectedData })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                insightReport.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        生成失败：${data.error}
+                    </div>
+                `;
+            } else {
+                renderMarkdown(data.report, insightReport);
+            }
+        } catch (error) {
+            insightReport.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    网络错误，请稍后重试
+                </div>
+            `;
+        }
+
+        generateInsightBtn.disabled = false;
+        generateInsightBtn.innerHTML = '<i class="fas fa-magic me-2"></i>生成洞察报告';
+    }
+
+    // 生成传播路径分析
+    async function generatePropagationReport() {
+        const selectedData = propagationDataSelect.value;
+        if (!selectedData) {
+            alert('请先选择数据源');
+            return;
+        }
+
+        generatePropagationBtn.disabled = true;
+        generatePropagationBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+        
+        propagationReport.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3"></i>
+                <p>AI正在分析商业转化，可能需要一分钟左右...</p>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/ai/generate_propagation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ data_source: selectedData })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                propagationReport.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        生成失败：${data.error}
+                    </div>
+                `;
+            } else {
+                renderMarkdown(data.report, propagationReport);
+            }
+        } catch (error) {
+            propagationReport.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    网络错误，请稍后重试
+                </div>
+            `;
+        }
+
+        generatePropagationBtn.disabled = false;
+        generatePropagationBtn.innerHTML = '<i class="fas fa-sitemap me-2"></i>生成传播分析';
+    }
+
+    // 生成用户行为预测
+    async function generateBehaviorPrediction() {
+        const selectedData = behaviorDataSelect.value;
+        const selectedModel = mlModel.value;
+        
+        if (!selectedData) {
+            alert('请先选择数据源');
+            return;
+        }
+
+        generateBehaviorBtn.disabled = true;
+        generateBehaviorBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>预测中...';
+        
+        behaviorResult.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3 text-indigo-600"></i>
+                <p>AI正在分析用户行为数据，训练机器学习模型...</p>
+            </div>
+        `;
+        
+        behaviorCharts.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin fa-3x text-gray-400"></i>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/ai/predict_behavior', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    data_source: selectedData,
+                    model: selectedModel
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                behaviorResult.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <i class="fas fa-exclamation-triangle me-2 text-red-600"></i>
+                        <span class="text-red-700">预测失败：${data.error}</span>
+                    </div>
+                `;
+                behaviorCharts.innerHTML = `
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-chart-area text-4xl mb-3"></i>
+                        <p>预测失败，无法生成图表</p>
+                    </div>
+                `;
+            } else {
+                // 显示预测结果
+                displayBehaviorResults(data);
+                // 渲染图表
+                renderBehaviorCharts(data);
+            }
+        } catch (error) {
+            behaviorResult.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <i class="fas fa-exclamation-triangle me-2 text-red-600"></i>
+                    <span class="text-red-700">网络错误，请稍后重试</span>
+                </div>
+            `;
+        }
+
+        generateBehaviorBtn.disabled = false;
+        generateBehaviorBtn.innerHTML = '<i class="fas fa-chart-line me-2"></i>生成行为预测';
+    }
+
+    // 显示预测结果
+    function displayBehaviorResults(data) {
+        const modelNames = {
+            'logistic': '逻辑回归',
+            'random_forest': '随机森林',
+            'decision_tree': '决策树',
+            'naive_bayes': '朴素贝叶斯'
+        };
+
+        behaviorResult.innerHTML = `
+            <div class="space-y-4">
+                <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-indigo-800 mb-2">
+                        <i class="fas fa-robot mr-2"></i>模型：${modelNames[data.model] || data.model}
+                    </h4>
+                    <p class="text-sm text-indigo-600">预测准确率：${(data.accuracy * 100).toFixed(2)}%</p>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-green-700">${data.high_engagement_count}</div>
+                        <div class="text-sm text-green-600 mt-1">高活跃用户</div>
+                        <div class="text-xs text-gray-500 mt-1">${(data.high_engagement_rate * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-yellow-700">${data.medium_engagement_count}</div>
+                        <div class="text-sm text-yellow-600 mt-1">中活跃用户</div>
+                        <div class="text-xs text-gray-500 mt-1">${(data.medium_engagement_rate * 100).toFixed(1)}%</div>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-gray-700">${data.low_engagement_count}</div>
+                        <div class="text-sm text-gray-600 mt-1">低活跃用户</div>
+                        <div class="text-xs text-gray-500 mt-1">${(data.low_engagement_rate * 100).toFixed(1)}%</div>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h5 class="font-semibold text-blue-800 mb-3">
+                        <i class="fas fa-lightbulb mr-2"></i>关键发现
+                    </h5>
+                    <ul class="space-y-2 text-sm text-blue-700">
+                        ${data.insights.map(insight => `<li><i class="fas fa-check-circle mr-2"></i>${insight}</li>`).join('')}
+                    </ul>
+                </div>
+
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h5 class="font-semibold text-purple-800 mb-2">
+                        <i class="fas fa-chart-line mr-2"></i>特征重要性
+                    </h5>
+                    <div class="space-y-2">
+                        ${data.feature_importance.map(feature => `
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span class="text-purple-700">${feature.name}</span>
+                                    <span class="text-purple-600">${(feature.importance * 100).toFixed(1)}%</span>
+                                </div>
+                                <div class="w-full bg-purple-200 rounded-full h-2">
+                                    <div class="bg-purple-600 h-2 rounded-full" style="width: ${feature.importance * 100}%"></div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 渲染ECharts图表
+    function renderBehaviorCharts(data) {
+        behaviorCharts.innerHTML = '';
+        
+        // 创建容器
+        const chartsContainer = document.createElement('div');
+        chartsContainer.className = 'grid grid-cols-1 md:grid-cols-2 gap-6';
+        behaviorCharts.appendChild(chartsContainer);
+
+        // 1. 用户活跃度分布饼图
+        const pieChartDiv = document.createElement('div');
+        pieChartDiv.style.width = '100%';
+        pieChartDiv.style.height = '350px';
+        chartsContainer.appendChild(pieChartDiv);
+
+        const pieChart = echarts.init(pieChartDiv);
+        const pieOption = {
+            title: {
+                text: '用户活跃度分布',
+                left: 'center',
+                textStyle: {
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                }
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b}: {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                top: 'middle'
+            },
+            series: [
+                {
+                    name: '用户数量',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{d}%'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 16,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    data: [
+                        { value: data.high_engagement_count, name: '高活跃', itemStyle: { color: '#10b981' } },
+                        { value: data.medium_engagement_count, name: '中活跃', itemStyle: { color: '#f59e0b' } },
+                        { value: data.low_engagement_count, name: '低活跃', itemStyle: { color: '#6b7280' } }
+                    ]
+                }
+            ]
+        };
+        pieChart.setOption(pieOption);
+
+        // 2. 特征重要性柱状图
+        const barChartDiv = document.createElement('div');
+        barChartDiv.style.width = '100%';
+        barChartDiv.style.height = '350px';
+        chartsContainer.appendChild(barChartDiv);
+
+        const barChart = echarts.init(barChartDiv);
+        const barOption = {
+            title: {
+                text: '特征重要性分析',
+                left: 'center',
+                textStyle: {
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
+                },
+                formatter: '{b}<br/>重要性: {c}%'
+            },
+            xAxis: {
+                type: 'category',
+                data: data.feature_importance.map(f => f.name),
+                axisLabel: {
+                    interval: 0,
+                    rotate: 30,
+                    fontSize: 11
+                }
+            },
+            yAxis: {
+                type: 'value',
+                name: '重要性 (%)',
+                axisLabel: {
+                    formatter: '{value}%'
+                }
+            },
+            series: [
+                {
+                    name: '重要性',
+                    type: 'bar',
+                    data: data.feature_importance.map(f => (f.importance * 100).toFixed(1)),
+                    itemStyle: {
+                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                            { offset: 0, color: '#667eea' },
+                            { offset: 1, color: '#764ba2' }
+                        ]),
+                        borderRadius: [5, 5, 0, 0]
+                    },
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: '{c}%',
+                        fontSize: 10
+                    }
+                }
+            ]
+        };
+        barChart.setOption(barOption);
+
+        // 3. 模型性能对比雷达图（如果有多个指标）
+        if (data.metrics) {
+            const radarChartDiv = document.createElement('div');
+            radarChartDiv.style.width = '100%';
+            radarChartDiv.style.height = '350px';
+            radarChartDiv.className = 'col-span-2';
+            chartsContainer.appendChild(radarChartDiv);
+
+            const radarChart = echarts.init(radarChartDiv);
+            const radarOption = {
+                title: {
+                    text: '模型性能指标',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {},
+                radar: {
+                    indicator: [
+                        { name: '准确率', max: 1 },
+                        { name: '精确率', max: 1 },
+                        { name: '召回率', max: 1 },
+                        { name: 'F1分数', max: 1 }
+                    ],
+                    radius: '60%'
+                },
+                series: [
+                    {
+                        name: '性能指标',
+                        type: 'radar',
+                        data: [
+                            {
+                                value: [
+                                    data.metrics.accuracy || data.accuracy,
+                                    data.metrics.precision || 0.8,
+                                    data.metrics.recall || 0.75,
+                                    data.metrics.f1_score || 0.77
+                                ],
+                                name: '模型表现',
+                                areaStyle: {
+                                    color: 'rgba(99, 102, 241, 0.3)'
+                                },
+                                itemStyle: {
+                                    color: '#6366f1'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            radarChart.setOption(radarOption);
+        }
+
+        // 响应式调整
+        window.addEventListener('resize', function() {
+            pieChart.resize();
+            barChart.resize();
+        });
+    }
+
+    // 生成情感传播预测
+    async function generateSentimentSpread() {
+        const selectedData = sentimentSpreadDataSelect.value;
+        const selectedModel = spreadModel.value;
+        const selectedAlgorithm = spreadAlgorithm.value;
+        
+        if (!selectedData) {
+            alert('请先选择数据源');
+            return;
+        }
+
+        generateSpreadBtn.disabled = true;
+        generateSpreadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>预测中...';
+        
+        sentimentSpreadResult.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3 text-pink-600"></i>
+                <p>AI正在分析情感传播数据，训练预测模型...</p>
+            </div>
+        `;
+        
+        sentimentSpreadCharts.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-spinner fa-spin fa-3x text-gray-400"></i>
+            </div>
+        `;
+
+        try {
+            const response = await fetch('/ai/predict_sentiment_spread', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    data_source: selectedData,
+                    model_type: selectedModel,
+                    algorithm: selectedAlgorithm
+                })
+            });
+
+            const data = await response.json();
+            
+            if (data.error) {
+                sentimentSpreadResult.innerHTML = `
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <i class="fas fa-exclamation-triangle me-2 text-red-600"></i>
+                        <span class="text-red-700">预测失败：${data.error}</span>
+                    </div>
+                `;
+                sentimentSpreadCharts.innerHTML = `
+                    <div class="text-center text-gray-400 py-12">
+                        <i class="fas fa-chart-area text-4xl mb-3"></i>
+                        <p>预测失败，无法生成图表</p>
+                    </div>
+                `;
+            } else {
+                // 显示预测结果
+                displaySentimentSpreadResults(data);
+                // 渲染图表
+                renderSentimentSpreadCharts(data);
+            }
+        } catch (error) {
+            sentimentSpreadResult.innerHTML = `
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <i class="fas fa-exclamation-triangle me-2 text-red-600"></i>
+                    <span class="text-red-700">网络错误，请稍后重试</span>
+                </div>
+            `;
+        }
+
+        generateSpreadBtn.disabled = false;
+        generateSpreadBtn.innerHTML = '<i class="fas fa-share-alt me-2"></i>生成传播预测';
+    }
+
+    // 显示情感传播预测结果
+    function displaySentimentSpreadResults(data) {
+        const modelNames = {
+            'time_series': '时间序列预测',
+            'propagation': '传播力度预测',
+            'geographic': '地域传播分析',
+            'influence': '影响力评估'
+        };
+
+        const algoNames = {
+            'linear_regression': '线性回归',
+            'ridge': '岭回归',
+            'random_forest_regressor': '随机森林回归',
+            'gradient_boosting': '梯度提升'
+        };
+
+        sentimentSpreadResult.innerHTML = `
+            <div class="space-y-4">
+                <div class="bg-gradient-to-r from-pink-50 to-rose-50 border border-pink-200 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-pink-800 mb-2">
+                        <i class="fas fa-chart-line mr-2"></i>${modelNames[data.model_type] || data.model_type}
+                    </h4>
+                    <p class="text-sm text-pink-600">算法：${algoNames[data.algorithm] || data.algorithm}</p>
+                    <p class="text-sm text-pink-600">预测准确度：R² = ${data.r2_score.toFixed(4)}</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-blue-700">${data.total_samples}</div>
+                        <div class="text-sm text-blue-600 mt-1">分析样本数</div>
+                    </div>
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+                        <div class="text-3xl font-bold text-green-700">${data.prediction_points}</div>
+                        <div class="text-sm text-green-600 mt-1">预测数据点</div>
+                    </div>
+                </div>
+
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                    <h5 class="font-semibold text-purple-800 mb-3">
+                        <i class="fas fa-brain mr-2"></i>传播趋势分析
+                    </h5>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-purple-700">情感传播速度：</span>
+                            <span class="font-semibold text-purple-900">${data.spread_velocity}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-purple-700">峰值时间：</span>
+                            <span class="font-semibold text-purple-900">${data.peak_time}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-purple-700">传播范围：</span>
+                            <span class="font-semibold text-purple-900">${data.spread_range}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                    <h5 class="font-semibold text-amber-800 mb-3">
+                        <i class="fas fa-lightbulb mr-2"></i>关键洞察
+                    </h5>
+                    <ul class="space-y-2 text-sm text-amber-700">
+                        ${data.insights.map(insight => `<li><i class="fas fa-arrow-right mr-2"></i>${insight}</li>`).join('')}
+                    </ul>
+                </div>
+
+                ${data.geographic_stats ? `
+                <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                    <h5 class="font-semibold text-teal-800 mb-3">
+                        <i class="fas fa-globe mr-2"></i>地域分布 Top 5
+                    </h5>
+                    <div class="space-y-1 text-sm">
+                        ${data.geographic_stats.map((geo, idx) => `
+                            <div class="flex justify-between items-center">
+                                <span class="text-teal-700">${idx + 1}. ${geo.location}</span>
+                                <div class="flex items-center">
+                                    <div class="w-24 bg-teal-200 rounded-full h-2 mr-2">
+                                        <div class="bg-teal-600 h-2 rounded-full" style="width: ${geo.percentage}%"></div>
+                                    </div>
+                                    <span class="text-teal-900 font-semibold">${geo.count}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // 渲染情感传播ECharts图表
+    function renderSentimentSpreadCharts(data) {
+        sentimentSpreadCharts.innerHTML = '';
+        
+        // 创建容器
+        const chartsContainer = document.createElement('div');
+        chartsContainer.className = 'space-y-6';
+        sentimentSpreadCharts.appendChild(chartsContainer);
+
+        // 1. 时间序列趋势图
+        if (data.time_series) {
+            const timeSeriesDiv = document.createElement('div');
+            timeSeriesDiv.style.width = '100%';
+            timeSeriesDiv.style.height = '400px';
+            chartsContainer.appendChild(timeSeriesDiv);
+
+            const timeChart = echarts.init(timeSeriesDiv);
+            const timeOption = {
+                title: {
+                    text: '情感传播时间序列趋势',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['实际值', '预测值', '趋势线'],
+                    top: 35
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data.time_series.timestamps,
+                    boundaryGap: false,
+                    axisLabel: {
+                        rotate: 30,
+                        fontSize: 10
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    name: '情感得分',
+                    min: -1,
+                    max: 1
+                },
+                series: [
+                    {
+                        name: '实际值',
+                        type: 'line',
+                        data: data.time_series.actual_values,
+                        smooth: 0.5,  // 增加平滑度
+                        sampling: 'average',  // 使用平均采样，减少波动
+                        itemStyle: {
+                            color: '#ec4899'
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(236, 72, 153, 0.2)' },
+                                { offset: 1, color: 'rgba(236, 72, 153, 0.05)' }
+                            ])
+                        },
+                        symbol: 'circle',  // 数据点标记
+                        symbolSize: 6
+                    },
+                    {
+                        name: '预测值',
+                        type: 'line',
+                        data: data.time_series.predicted_values,
+                        smooth: 0.5,  // 增加平滑度
+                        sampling: 'average',  // 使用平均采样
+                        itemStyle: {
+                            color: '#8b5cf6'
+                        },
+                        lineStyle: {
+                            type: 'dashed',
+                            width: 2
+                        },
+                        symbol: 'circle',
+                        symbolSize: 6
+                    },
+                    {
+                        name: '趋势线',
+                        type: 'line',
+                        data: data.time_series.trend_values,
+                        smooth: 0.7,  // 趋势线更平滑
+                        sampling: 'average',
+                        itemStyle: {
+                            color: '#10b981'
+                        },
+                        lineStyle: {
+                            width: 3
+                        },
+                        symbol: 'none'  // 趋势线不显示数据点
+                    }
+                ]
+            };
+            timeChart.setOption(timeOption);
+            
+            // 响应式
+            window.addEventListener('resize', () => timeChart.resize());
+        }
+
+        // 2. 情感分布热力图
+        if (data.sentiment_heatmap) {
+            const heatmapDiv = document.createElement('div');
+            heatmapDiv.style.width = '100%';
+            heatmapDiv.style.height = '350px';
+            chartsContainer.appendChild(heatmapDiv);
+
+            const heatChart = echarts.init(heatmapDiv);
+            const heatOption = {
+                title: {
+                    text: '情感传播热力分布',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    position: 'top'
+                },
+                grid: {
+                    height: '70%',
+                    top: '15%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: data.sentiment_heatmap.x_labels,
+                    splitArea: {
+                        show: true
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: data.sentiment_heatmap.y_labels,
+                    splitArea: {
+                        show: true
+                    }
+                },
+                visualMap: {
+                    min: 0,
+                    max: data.sentiment_heatmap.max_value,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '0%',
+                    inRange: {
+                        color: ['#e0f2fe', '#0ea5e9', '#1e40af']
+                    }
+                },
+                series: [{
+                    name: '互动强度',
+                    type: 'heatmap',
+                    data: data.sentiment_heatmap.data,
+                    label: {
+                        show: true
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+            heatChart.setOption(heatOption);
+            
+            window.addEventListener('resize', () => heatChart.resize());
+        }
+
+        // 3. 地域传播地图（如果有地域数据）
+        if (data.geographic_chart) {
+            const geoDiv = document.createElement('div');
+            geoDiv.className = 'grid grid-cols-2 gap-4';
+            chartsContainer.appendChild(geoDiv);
+
+            // 地域分布饼图
+            const geoPieDiv = document.createElement('div');
+            geoPieDiv.style.width = '100%';
+            geoPieDiv.style.height = '350px';
+            geoDiv.appendChild(geoPieDiv);
+
+            const geoPieChart = echarts.init(geoPieDiv);
+            const geoPieOption = {
+                title: {
+                    text: '地域传播分布',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{d}%'
+                    },
+                    data: data.geographic_chart.data
+                }]
+            };
+            geoPieChart.setOption(geoPieOption);
+
+            // 影响力漏斗图
+            const funnelDiv = document.createElement('div');
+            funnelDiv.style.width = '100%';
+            funnelDiv.style.height = '350px';
+            geoDiv.appendChild(funnelDiv);
+
+            const funnelChart = echarts.init(funnelDiv);
+            const funnelOption = {
+                title: {
+                    text: '传播影响力层级',
+                    left: 'center',
+                    textStyle: {
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                    }
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c}'
+                },
+                series: [{
+                    type: 'funnel',
+                    left: '10%',
+                    top: 60,
+                    bottom: 60,
+                    width: '80%',
+                    min: 0,
+                    max: 100,
+                    minSize: '0%',
+                    maxSize: '100%',
+                    sort: 'descending',
+                    gap: 2,
+                    label: {
+                        show: true,
+                        position: 'inside'
+                    },
+                    itemStyle: {
+                        borderColor: '#fff',
+                        borderWidth: 1
+                    },
+                    emphasis: {
+                        label: {
+                            fontSize: 20
+                        }
+                    },
+                    data: data.influence_funnel || [
+                        { value: 100, name: '核心传播者' },
+                        { value: 80, name: '活跃传播者' },
+                        { value: 60, name: '普通参与者' },
+                        { value: 40, name: '被动接收者' },
+                        { value: 20, name: '观望用户' }
+                    ]
+                }]
+            };
+            funnelChart.setOption(funnelOption);
+
+            window.addEventListener('resize', () => {
+                geoPieChart.resize();
+                funnelChart.resize();
+            });
+        }
+    }
+
+    // 生成报告按钮
+    generateInsightBtn.addEventListener('click', generateInsightReport);
+    generatePropagationBtn.addEventListener('click', generatePropagationReport);
+    generateBehaviorBtn.addEventListener('click', generateBehaviorPrediction);
+    generateSpreadBtn.addEventListener('click', generateSentimentSpread);
+    
+    // 聊天功能事件监听
+    sendChatBtn.addEventListener('click', sendChatMessage);
+    clearChatBtn.addEventListener('click', clearChatHistory);
+    
+    // Ctrl+Enter 发送消息
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            sendChatMessage();
+        }
+    });
+    
+    // 发送聊天消息
+    async function sendChatMessage() {
+        const message = chatInput.value.trim();
+        if (!message) {
+            alert('请输入消息内容');
+            return;
+        }
+        
+        const dataSource = chatDataSource.value;
+        
+        // 添加用户消息到聊天历史
+        appendMessage('user', message);
+        
+        // 清空输入框
+        chatInput.value = '';
+        
+        // 禁用发送按钮
+        sendChatBtn.disabled = true;
+        sendChatBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>思考中...';
+        
+        // 显示 AI 正在输入的提示
+        const loadingId = appendLoadingMessage();
+        
+        try {
+            const response = await fetch('/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message,
+                    data_source: dataSource || null
+                })
+            });
+            
+            const data = await response.json();
+            
+            // 移除加载提示
+            removeMessage(loadingId);
+            
+            if (data.error) {
+                appendMessage('ai', `抱歉，出现错误：${data.error}`);
+            } else {
+                appendMessage('ai', data.response);
+            }
+        } catch (error) {
+            removeMessage(loadingId);
+            appendMessage('ai', '抱歉，网络错误，请稍后重试');
+        }
+        
+        // 恢复发送按钮
+        sendChatBtn.disabled = false;
+        sendChatBtn.innerHTML = '<i class="fas fa-paper-plane mr-2"></i>发送';
+        
+        // 聚焦到输入框
+        chatInput.focus();
+    }
+    
+    // 添加消息到聊天历史
+    function appendMessage(role, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex items-start space-x-3';
+        
+        if (role === 'user') {
+            messageDiv.innerHTML = `
+                <div class="flex-1 bg-blue-50 rounded-lg p-4 ml-12">
+                    <p class="text-gray-800">${escapeHtml(content)}</p>
+                </div>
+                <div class="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-user text-blue-600"></i>
+                </div>
+            `;
+        } else {
+            // AI 消息，渲染 Markdown
+            messageDiv.innerHTML = `
+                <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-robot text-green-600"></i>
+                </div>
+                <div class="flex-1 bg-gray-50 rounded-lg p-4 markdown-content">
+                    ${marked.parse(content)}
+                </div>
+            `;
+        }
+        
+        chatHistory.appendChild(messageDiv);
+        
+        // 滚动到底部
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    
+    // 添加加载消息
+    function appendLoadingMessage() {
+        const id = 'loading-' + Date.now();
+        const messageDiv = document.createElement('div');
+        messageDiv.id = id;
+        messageDiv.className = 'flex items-start space-x-3';
+        messageDiv.innerHTML = `
+            <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-robot text-green-600"></i>
+            </div>
+            <div class="flex-1 bg-gray-50 rounded-lg p-4">
+                <div class="flex items-center space-x-2">
+                    <div class="flex space-x-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                    <span class="text-gray-500 text-sm">AI 正在思考...</span>
+                </div>
+            </div>
+        `;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        return id;
+    }
+    
+    // 移除消息
+    function removeMessage(id) {
+        const message = document.getElementById(id);
+        if (message) {
+            message.remove();
+        }
+    }
+    
+    // 清空聊天历史
+    function clearChatHistory() {
+        if (confirm('确定要清空聊天历史吗？')) {
+            chatHistory.innerHTML = `
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0 w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-robot text-green-600"></i>
+                    </div>
+                    <div class="flex-1 bg-gray-50 rounded-lg p-4">
+                        <p class="text-gray-800">聊天历史已清空。有什么可以帮你的吗？</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // HTML 转义函数
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+});
+
+// 标签页切换函数
+function showTab(tabName) {
+    // 隐藏所有标签页内容
+    const contents = document.querySelectorAll('.tab-content');
+    contents.forEach(content => {
+        if (content.id.includes('-content')) {
+            content.classList.add('hidden');
+        }
+    });
+    
+    // 重置所有标签按钮样式
+    const buttons = document.querySelectorAll('.tab-button');
+    buttons.forEach(button => {
+        button.classList.remove('border-gray-400', 'text-gray-700', 'bg-white', 'shadow-sm');
+        button.classList.add('border-transparent', 'text-gray-500', 'bg-transparent');
+    });
+    
+    // 显示选中的标签页内容
+    document.getElementById(tabName + '-content').classList.remove('hidden');
+    
+    // 激活选中的标签按钮
+    const activeButton = document.getElementById(tabName + '-tab');
+    activeButton.classList.remove('border-transparent', 'text-gray-500', 'bg-transparent');
+    activeButton.classList.add('border-gray-400', 'text-gray-700', 'bg-white', 'shadow-sm');
+}
+</script>
+
+<style>
+.markdown-content {
+    line-height: 1.6;
+}
+
+.markdown-content h1, .markdown-content h2, .markdown-content h3 {
+    color: #333;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.markdown-content pre {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    overflow-x: auto;
+}
+
+.markdown-content code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+    margin-left: 0;
+    color: #6c757d;
+}
+
+.mermaid-diagram {
+    text-align: center;
+    margin: 1rem 0;
+}
+
+.mermaid-diagram svg {
+    max-width: 100%;
+    height: auto;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,420 @@
+{% extends "base.html" %}
+
+{% block title %}新建爬取任务 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义样式 - 高级感设计 */
+    .task-creation-container {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: radial-gradient(circle at top right, rgba(102, 126, 234, 0.1), transparent 30%),
+                    radial-gradient(circle at bottom left, rgba(118, 75, 162, 0.1), transparent 30%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .form-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .form-card:hover {
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .card-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 200%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shine 3s infinite;
+    }
+    
+    @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+    
+    .form-group {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    
+    .form-input:focus + .input-icon {
+        color: #667eea;
+        transform: scale(1.1);
+    }
+    
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9ca3af;
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        transition: all 0.6s ease;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(156, 163, 175, 0.3);
+    }
+    
+    .btn-secondary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(156, 163, 175, 0.4);
+    }
+    
+    .info-card {
+        background: rgba(102, 126, 234, 0.05);
+        border: 1px solid rgba(102, 126, 234, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+    }
+    
+    .instruction-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid rgba(229, 231, 235, 0.8);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .instruction-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+    }
+    
+    .instruction-step {
+        transition: all 0.3s ease;
+    }
+    
+    .instruction-step:hover {
+        transform: translateX(5px);
+    }
+    
+    .step-number {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+    
+    .warning-card {
+        background: rgba(251, 191, 36, 0.05);
+        border: 1px solid rgba(251, 191, 36, 0.2);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .warning-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.1);
+    }
+    
+    /* 动画效果 */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease forwards;
+    }
+    
+    .delay-100 {
+        animation-delay: 0.1s;
+    }
+    
+    .delay-200 {
+        animation-delay: 0.2s;
+    }
+    
+    .delay-300 {
+        animation-delay: 0.3s;
+    }
+    
+    .delay-400 {
+        animation-delay: 0.4s;
+    }
+</style>
+
+<div class="task-creation-container">
+    <div class="max-w-3xl mx-auto px-4">
+        <!-- 返回按钮 -->
+        <div class="mb-6">
+            <a href="{{ url_for('scraper.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition-colors duration-300 animate-fade-in">
+                <i class="fas fa-arrow-left mr-2"></i>
+                <span>返回任务列表</span>
+            </a>
+        </div>
+        
+        <!-- 表单卡片 -->
+        <div class="form-card mb-8 animate-fade-in delay-100">
+            <div class="card-header px-8 py-6 text-white">
+                <h1 class="text-2xl md:text-3xl font-bold flex items-center">
+                    <i class="fas fa-plus-circle mr-3 text-xl"></i>新建爬取任务
+                </h1>
+                <p class="mt-2 opacity-90">输入抖音视频ID，系统将自动爬取该视频的评论数据</p>
+            </div>
+            <div class="p-8">
+                <form method="POST" class="space-y-6">
+                    <!-- 视频ID输入框 -->
+                    <div class="form-group">
+                        <label for="aweme_id" class="form-label">抖音视频ID <span class="text-red-500">*</span></label>
+                        <div class="relative">
+                            <i class="fab fa-tiktok text-2xl input-icon"></i>
+                            <input type="text" 
+                                   class="form-input h-12"
+                                   id="aweme_id" 
+                                   name="aweme_id" 
+                                   placeholder="请输入抖音视频ID（例如：7123456789012345678）" 
+                                   required>
+                        </div>
+                        <div class="mt-2 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                            视频ID可以从抖音视频链接中获取，通常是一串19位左右的数字
+                        </div>
+                    </div>
+                    
+                    <!-- 信息提示卡片 -->
+                    <div class="info-card animate-fade-in delay-200">
+                        <div class="flex items-start">
+                            <div class="bg-indigo-100 rounded-full p-2 text-indigo-600 mr-4 flex-shrink-0">
+                                <i class="fas fa-lightbulb text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-indigo-800 mb-2">使用提示</h3>
+                                <p class="text-indigo-700">
+                                    请确保输入的是抖音视频的ID（不是完整链接）。系统将自动爬取该视频的评论数据，并进行情感分析。
+                                    爬取过程可能需要一定时间，具体取决于评论数量。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4 animate-fade-in delay-300">
+                        <button type="submit" class="btn-primary text-white py-4 px-8 rounded-xl transition-all duration-300 inline-flex items-center justify-center font-medium shadow-lg hover:shadow-xl">
+                            <i class="fas fa-rocket mr-3 text-xl"></i>
+                            开始爬取
+                        </button>
+                        <a href="{{ url_for('scraper.index') }}" class="btn-secondary text-white py-4 px-8 rounded-xl transition-all duration-300 inline-flex items-center justify-center font-medium shadow-md hover:shadow-lg">
+                            <i class="fas fa-times-circle mr-3"></i>
+                            取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 使用说明卡片 -->
+        <div class="instruction-card mb-8 animate-fade-in delay-400">
+            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-8 py-6 border-b border-gray-200">
+                <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                    <i class="fas fa-book-open mr-3 text-indigo-600"></i>使用指南
+                </h2>
+            </div>
+            <div class="p-8">
+                <div class="space-y-6">
+                    <div class="instruction-step flex items-start gap-4">
+                        <div class="step-number mr-4 mt-1">1</div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">找到目标视频</h3>
+                            <p class="text-gray-600">在抖音APP中浏览并找到您想要分析评论的视频。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step flex items-start gap-4">
+                        <div class="step-number mr-4 mt-1">2</div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">获取视频ID</h3>
+                            <p class="text-gray-600">点击视频分享按钮，复制视频链接，然后从中提取视频ID。</p>
+                            <div class="mt-3 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <p class="text-sm text-gray-600">
+                                    <strong>示例链接：</strong>https://v.douyin.com/xxxx/
+                                    <br>
+                                    <strong>提取ID：</strong>7123456789012345678
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step flex items-start gap-4">
+                        <div class="step-number mr-4 mt-1">3</div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">粘贴ID并爬取</h3>
+                            <p class="text-gray-600">将提取的视频ID粘贴到上方输入框中，点击"开始爬取"按钮。</p>
+                        </div>
+                    </div>
+                    
+                    <div class="instruction-step flex items-start gap-4">
+                        <div class="step-number mr-4 mt-1">4</div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">查看结果</h3>
+                            <p class="text-gray-600">爬取完成后，您可以在任务列表中查看并分析评论数据。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 警告信息 -->
+                <div class="warning-card p-5 mt-8">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-600 text-xl mr-3 mt-1"></i>
+                        <p class="text-sm text-yellow-800">
+                            <strong>法律合规提示：</strong>本系统仅用于学习和研究目的，请遵守相关法律法规和平台规则。请确保您对爬取的数据拥有合法使用权，并尊重用户隐私。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 为输入框添加焦点动画效果
+        const inputField = document.getElementById('aweme_id');
+        
+        inputField.addEventListener('focus', function() {
+            this.parentElement.classList.add('scale-102');
+            this.parentElement.style.transition = 'all 0.3s ease';
+        });
+        
+        inputField.addEventListener('blur', function() {
+            this.parentElement.classList.remove('scale-102');
+        });
+        
+        // 表单提交处理
+        const form = document.querySelector('form[method="POST"]');
+        
+        form.addEventListener('submit', function(e) {
+            // 简单的ID格式验证
+            const awemeId = inputField.value.trim();
+            
+            if (!awemeId) {
+                alert('请输入抖音视频ID');
+                e.preventDefault();
+                return;
+            }
+            
+            // 检查是否为纯数字
+            if (!/^\d+$/.test(awemeId)) {
+                alert('请输入有效的数字ID');
+                e.preventDefault();
+                return;
+            }
+            
+            // 显示加载状态
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-3"></i>正在提交...';
+        });
+    });
+</script>
+{% endblock %}

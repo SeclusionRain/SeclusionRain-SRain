@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}分析历史 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block scripts %}
+<script>
+    // 数字滚动动画
+    function animateValue(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = Math.floor(progress * (end - start) + start);
+            element.textContent = value.toLocaleString();
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 百分比滚动动画
+    function animatePercentage(element, start, end, duration) {
+        let startTime = null;
+        
+        function animation(currentTime) {
+            if (startTime === null) startTime = currentTime;
+            const timeElapsed = currentTime - startTime;
+            const progress = Math.min(timeElapsed / duration, 1);
+            const value = progress * (end - start) + start;
+            element.textContent = value.toFixed(1) + '%';
+            
+            if (progress < 1) {
+                requestAnimationFrame(animation);
+            }
+        }
+        
+        requestAnimationFrame(animation);
+    }
+
+    // 卡片悬停效果
+    function addCardHoverEffects() {
+        const cards = document.querySelectorAll('.stat-card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-lg', 'scale-105');
+                this.classList.remove('shadow-md');
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-lg', 'scale-105');
+                this.classList.add('shadow-md');
+            });
+        });
+    }
+
+    // 表格行悬停效果
+    function addTableRowEffects() {
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach(row => {
+            row.addEventListener('mouseenter', function() {
+                this.classList.add('shadow-md');
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            row.addEventListener('mouseleave', function() {
+                this.classList.remove('shadow-md');
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    }
+
+    // 操作按钮悬停效果
+    function addActionButtonEffects() {
+        const actionButtons = document.querySelectorAll('.action-buttons button, .action-buttons a');
+        actionButtons.forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.classList.add('scale-110');
+                this.classList.add('shadow-md');
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.classList.remove('scale-110');
+                this.classList.remove('shadow-md');
+            });
+        });
+    }
+
+    // 进度条动画
+    function animateProgressBars() {
+        const progressBars = document.querySelectorAll('.progress-bar');
+        progressBars.forEach((bar, index) => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 300 + (index * 100));
+        });
+    }
+
+    // 初始化所有动画和效果
+    document.addEventListener('DOMContentLoaded', function() {
+        // 添加卡片悬停效果
+        addCardHoverEffects();
+        
+        // 添加表格行悬停效果
+        addTableRowEffects();
+        
+        // 添加操作按钮悬停效果
+        addActionButtonEffects();
+        
+        // 添加进度条动画
+        animateProgressBars();
+        
+        // 统计数字动画
+        const totalAnalysisElement = document.querySelector('.total-analysis');
+        if (totalAnalysisElement) {
+            const totalAnalysis = parseInt(totalAnalysisElement.textContent);
+            animateValue(totalAnalysisElement, 0, totalAnalysis, 1500);
+        }
+        
+        const totalCommentsElement = document.querySelector('.total-comments');
+        if (totalCommentsElement) {
+            const totalComments = parseInt(totalCommentsElement.textContent.replace(/,/g, ''));
+            animateValue(totalCommentsElement, 0, totalComments, 1500);
+        }
+        
+        const avgPositiveRateElement = document.querySelector('.avg-positive-rate');
+        if (avgPositiveRateElement) {
+            const avgPositiveRate = parseFloat(avgPositiveRateElement.textContent);
+            animatePercentage(avgPositiveRateElement, 0, avgPositiveRate, 1500);
+        }
+        
+        // 表格中的数字动画
+        document.querySelectorAll('.table-number').forEach((element, index) => {
+            setTimeout(() => {
+                const value = parseInt(element.textContent.replace(/,/g, ''));
+                animateValue(element, 0, value, 1000);
+            }, 500 + (index * 50));
+        });
+    });
+    
+    // 删除历史记录函数
+    function deleteHistory(historyId) {
+        if (confirm('确定要删除这条分析历史吗？此操作不可恢复。')) {
+            fetch(`/analysis/delete/${historyId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // 添加删除动画
+                    const row = document.querySelector(`tr[data-history-id="${historyId}"]`);
+                    if (row) {
+                        row.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                        row.style.opacity = '0';
+                        row.style.transform = 'translateX(-20px) scale(0.95)';
+                        row.style.height = row.offsetHeight + 'px';
+                        row.style.overflow = 'hidden';
+                        
+                        // 收缩行高
+                        setTimeout(() => {
+                            row.style.height = '0';
+                            row.style.padding = '0';
+                            row.style.margin = '0';
+                        }, 300);
+                        
+                        // 延迟刷新页面，让动画完成
+                        setTimeout(() => {
+                            location.reload();
+                        }, 800);
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    alert('删除失败，请重试');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('删除失败，请重试');
+            });
+        }
+    }
+    
+    // 添加按钮点击波纹效果
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.action-buttons button, .action-buttons a, .btn-primary');
+        buttons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                const circle = document.createElement('span');
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+                
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${e.clientX - button.getBoundingClientRect().left - radius}px`;
+                circle.style.top = `${e.clientY - button.getBoundingClientRect().top - radius}px`;
+                circle.classList.add('ripple');
+                
+                const ripple = button.getElementsByClassName('ripple')[0];
+                if (ripple) {
+                    ripple.remove();
+                }
+                
+                button.appendChild(circle);
+            });
+        });
+        
+        // 为表格中的所有行添加进入动画
+        const tableRows = document.querySelectorAll('tbody tr');
+        tableRows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, 100 * index);
+        });
+        
+        // 为统计卡片添加进入动画
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            
+            setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 200 * index);
+        });
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<style>
+    /* 自定义动画和过渡效果 */
+    @keyframes shimmer {
+        0% { transform: translateX(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) rotate(45deg); }
+    }
+    
+    @keyframes progressShimmer {
+        100% { transform: translateX(100%); }
+    }
+    
+    /* 自定义样式 */
+    .stat-card {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        opacity: 0;
+        transform: scaleX(0);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover::before {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+    
+    .stat-card.blue::before {
+        background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    }
+    
+    .stat-card.purple::before {
+        background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+    }
+    
+    .stat-card.green::before {
+        background: linear-gradient(90deg, #10b981, #34d399);
+    }
+    
+    .stat-card.amber::before {
+        background: linear-gradient(90deg, #f59e0b, #fbbf24);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-bar {
+        transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        transform: translateX(-100%);
+        animation: progressShimmer 2s infinite;
+    }
+    
+    .action-buttons button,
+    .action-buttons a {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .action-buttons button::before,
+    .action-buttons a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+    
+    .action-buttons button:hover::before,
+    .action-buttons a:hover::before {
+        left: 100%;
+    }
+    
+    .action-buttons button:hover,
+    .action-buttons a:hover {
+        filter: brightness(1.1);
+        transform: scale(1.05);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table-row-animate {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .table-row-animate:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 自定义滚动条 */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: #a1a1aa;
+    }
+    
+    /* 响应式设计优化 */
+    @media (max-width: 768px) {
+        .stat-card {
+            margin-bottom: 1rem;
+        }
+        
+        .table thead {
+            font-size: 12px;
+        }
+        
+        .table td {
+            padding: 0.75rem 0.5rem;
+            font-size: 14px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem !important;
+        }
+        
+        .action-buttons button,
+        .action-buttons a {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .card-body {
+            padding: 1rem !important;
+        }
+        
+        .card-title {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* 渐变背景增强 */
+    .gradient-bg {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .gradient-bg::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+        transform: rotate(45deg);
+        animation: shimmer 3s infinite;
+    }
+    
+    /* 按钮动画 */
+    .btn-primary {
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.2);
+        transition: all 0.5s ease;
+        z-index: -1;
+    }
+    
+    .btn-primary:hover::before {
+        left: 100%;
+    }
+    
+    .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    /* 数字动画容器 */
+    .count-container {
+        display: inline-block;
+        min-width: 60px;
+    }
+    
+    /* 无数据提示动画 */
+    .no-data-message {
+        animation: fadeIn 0.5s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* 波纹效果 */
+    .ripple {
+        position: absolute;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.5);
+        transform: scale(0);
+        animation: ripple-animation 0.6s ease-out;
+        pointer-events: none;
+    }
+    
+    @keyframes ripple-animation {
+        to {
+            transform: scale(4);
+            opacity: 0;
+        }
+    }
+</style>
+
+<!-- 页面标题区域 -->
+<div class="gradient-bg rounded-2xl shadow-xl p-6 mb-8 text-white">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold mb-2 flex items-center">
+                <i class="fas fa-history mr-3"></i>分析历史
+            </h1>
+            <p class="text-white/90">查看所有已完成的情感分析任务记录</p>
+        </div>
+        <a href="{{ url_for('analysis.index') }}" class="inline-flex items-center bg-white text-purple-600 hover:bg-white/90 px-6 py-3 rounded-lg transition-all duration-300 font-semibold shadow-lg mt-4 md:mt-0 btn-primary">
+            <i class="fas fa-plus mr-2"></i>新建分析
+        </a>
+    </div>
+</div>
+
+{% if histories %}
+    <!-- 分析历史表格 -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 mb-8 overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h2 class="text-xl font-bold text-gray-800">分析任务列表</h2>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">分析时间</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">使用模型</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">评论总数</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">正面</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">负面</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">正面率</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">操作</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-100">
+                    {% for history in histories %}
+                    <tr class="transition-all duration-300 hover:bg-gray-50 table-row-animate" data-history-id="{{ history.id }}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ history.analysis_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">{{ history.model_name }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 table-number">{{ history.total_comments }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-lg font-bold text-green-600 table-number">{{ history.positive_count }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="text-lg font-bold text-red-600 table-number">{{ history.negative_count }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                {% set positive_rate = (history.positive_count / history.total_comments * 100)|round(1) %}
+                                <div class="w-24 bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-green-400 to-emerald-500 h-2.5 rounded-full transition-all duration-1000 ease-out progress-bar" style="width: {{ positive_rate }}%">
+                                    </div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-700">{{ positive_rate }}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex space-x-2 action-buttons">
+                                <a href="{{ url_for('analysis.view_result', history_id=history.id) }}" 
+                                   class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center" title="查看详情">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" 
+                                   class="bg-purple-500 hover:bg-purple-600 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center" title="可视化">
+                                    <i class="fas fa-chart-bar"></i>
+                                </a>
+                                <button class="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-all duration-300 flex items-center justify-center" 
+                                        onclick="deleteHistory({{ history.id }})" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 统计信息卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- 总分析次数 -->
+        <div class="stat-card bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-md border border-blue-100 p-6 transition-all duration-300 blue">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h5 class="text-blue-700 font-medium mb-1">总分析次数</h5>
+                    <div class="text-3xl font-bold text-gray-800 total-analysis">
+                        {{ histories|length }}
+                    </div>
+                </div>
+                <div class="bg-blue-100 p-3 rounded-full text-blue-600 shadow-inner">
+                    <i class="fas fa-history text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 总评论数 -->
+        <div class="stat-card bg-gradient-to-br from-purple-50 to-fuchsia-50 rounded-2xl shadow-md border border-purple-100 p-6 transition-all duration-300 purple">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h5 class="text-purple-700 font-medium mb-1">总评论数</h5>
+                    <div class="text-3xl font-bold text-gray-800 total-comments">
+                        {{ histories|sum(attribute='total_comments') }}
+                    </div>
+                </div>
+                <div class="bg-purple-100 p-3 rounded-full text-purple-600 shadow-inner">
+                    <i class="fas fa-comment-dots text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 平均正面率 -->
+        <div class="stat-card bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl shadow-md border border-green-100 p-6 transition-all duration-300 green">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h5 class="text-green-700 font-medium mb-1">平均正面率</h5>
+                    <div class="text-3xl font-bold text-gray-800 avg-positive-rate">
+                        {% set total_comments = histories|sum(attribute='total_comments') %}
+                        {% set total_positive = histories|sum(attribute='positive_count') %}
+                        {% if total_comments > 0 %}
+                            {{ (total_positive / total_comments * 100)|round(1) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="bg-green-100 p-3 rounded-full text-green-600 shadow-inner">
+                    <i class="fas fa-smile text-xl"></i>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 最近分析 -->
+        <div class="stat-card bg-gradient-to-br from-amber-50 to-yellow-50 rounded-2xl shadow-md border border-amber-100 p-6 transition-all duration-300 amber">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h5 class="text-amber-700 font-medium mb-1">最近分析</h5>
+                    <div class="text-xl font-bold text-gray-800">
+                        {% if histories %}
+                            {{ histories[0].analysis_time.strftime('%m-%d %H:%M') }}
+                        {% else %}
+                            无
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="bg-amber-100 p-3 rounded-full text-amber-600 shadow-inner">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- 无历史记录提示 -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-12 text-center transform transition-all duration-500 hover:shadow-xl">
+        <div class="inline-block bg-blue-50 p-6 rounded-full mb-6 shadow-inner">
+            <i class="fas fa-chart-line text-4xl text-blue-500"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-gray-800 mb-3">暂无分析历史</h3>
+        <p class="text-gray-600 mb-8 max-w-md mx-auto">开始您的第一次情感分析，探索用户评论中的情感倾向和趋势。</p>
+        <a href="{{ url_for('analysis.index') }}" class="inline-flex items-center bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white px-8 py-4 rounded-xl transition-all duration-300 font-semibold shadow-lg btn-primary">
+            <i class="fas fa-plus mr-3"></i>开始分析
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

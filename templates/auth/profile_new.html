@@ -1,0 +1,478 @@
+{% extends "base.html" %}
+
+{% block title %}个人信息 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<style>
+/* 统一的卡片样式 */
+.profile-card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 输入框聚焦效果 */
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    border-color: #17a2b8;
+}
+
+/* 按钮样式 */
+.btn-primary {
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 头部样式 */
+.card-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    font-weight: 500;
+}
+
+/* 标签样式 */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+/* 渐变背景和阴影 */
+.bg-gradient-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+}
+
+.bg-gradient-success {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.bg-gradient-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+}
+
+/* 输入框只读样式 */
+.form-control[readonly] {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+}
+
+/* 动画效果 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.fade-in-up {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+/* 进度条动画 */
+.progress-bar {
+    transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 信息分组标题 */
+.info-group-title {
+    font-weight: 600;
+    color: #17a2b8;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.info-group-title i {
+    margin-right: 0.5rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .col-md-6 {
+        margin-bottom: 1rem;
+    }
+}
+</style>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <!-- 个人信息编辑表单 -->
+        <div class="card profile-card shadow mb-4 fade-in-up">
+            <div class="card-header bg-gradient-info text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>个人信息
+                </h4>
+                <button type="button" class="btn btn-light btn-sm" id="editToggle">
+                    <i class="fas fa-edit me-1"></i>编辑
+                </button>
+            </div>
+            <div class="card-body">
+                <form id="profileForm" method="POST" action="{{ url_for('auth.update_profile') }}">
+                    <div class="row">
+                        <!-- 基本信息 -->
+                        <div class="col-md-6">
+                            <h6 class="info-group-title">
+                                <i class="fas fa-info-circle me-2"></i>基本信息
+                            </h6>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">用户名</label>
+                                <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                                <small class="text-muted">用户名不可修改</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <input type="email" class="form-control profile-field" name="email" 
+                                       value="{{ current_user.email or '' }}" readonly>
+                            </div>
+                        </div>
+                        
+                        <!-- 职业信息 -->
+                        <div class="col-md-6">    
+                            <div class="mb-3">
+                                <label class="form-label">头像URL</label>
+                                <input type="url" class="form-control profile-field" name="avatar_url" 
+                                       value="{{ current_user.avatar_url or '' }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 个人简介 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="info-group-title">
+                                <i class="fas fa-user-circle me-2"></i>个人简介
+                            </h6>
+                            <div class="mb-3">
+                                <textarea class="form-control profile-field" name="bio" rows="4" readonly>{{ current_user.bio or '' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock me-1"></i>
+                                        注册时间：{{ current_user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {% if current_user.updated_at %}
+                                        | 更新时间：{{ current_user.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div id="formButtons" style="display: none;">
+                                    <button type="button" class="btn btn-secondary me-2" id="cancelEdit">取消</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-1"></i>保存
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 使用统计 -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card profile-card shadow fade-in-up" style="animation-delay: 0.1s;">
+                            <div class="card-header bg-gradient-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-chart-bar me-2"></i>使用统计
+                                </h5>
+                            </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <h3 class="text-primary">{{ current_user.scrape_tasks.count() }}</h3>
+                                    <small class="text-muted">爬取任务</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <h3 class="text-success">{{ current_user.analysis_histories.count() }}</h3>
+                                <small class="text-muted">分析次数</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card profile-card shadow fade-in-up" style="animation-delay: 0.2s;">
+                    <div class="card-header bg-gradient-warning text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user-shield me-2"></i>账户安全
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="fas fa-key me-2"></i>修改密码
+                            </button>
+                            <button type="button" class="btn btn-outline-danger">
+                                <i class="fas fa-user-times me-2"></i>注销账户
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 最近活动 -->
+        <div class="card profile-card shadow mt-4 fade-in-up" style="animation-delay: 0.3s;">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>最近活动
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>最近爬取任务</h6>
+                        {% if recent_tasks %}
+                            <ul class="list-group list-group-flush">
+                                {% for task in recent_tasks %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center hover:bg-light transition-colors duration-200">
+                                    <div>
+                                        <small class="text-muted">{{ task.aweme_id }}</small>
+                                        <br>
+                                        <small>{{ task.created_at.strftime('%m-%d %H:%M') }}</small>
+                                    </div>
+                                    <span class="badge bg-{{ 'success' if task.status == 'completed' else 'warning' if task.status == 'running' else 'danger' if task.status == 'failed' else 'secondary' }}">
+                                        {{ task.status }}
+                                    </span>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">暂无爬取任务</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>最近分析</h6>
+                        {% if recent_analyses %}
+                            <ul class="list-group list-group-flush">
+                                {% for analysis in recent_analyses %}
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">{{ analysis.model_name }}</small>
+                                        <small>{{ analysis.analysis_time.strftime('%m-%d %H:%M') }}</small>
+                                    </div>
+                                    <small>{{ analysis.total_comments }} 条评论</small>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        {% else %}
+                            <p class="text-muted">暂无分析记录</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 修改密码模态框 -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">修改密码</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="changePasswordForm" method="POST" action="{{ url_for('auth.change_password') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">当前密码</label>
+                        <input type="password" class="form-control" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密码</label>
+                        <input type="password" class="form-control" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">确认新密码</label>
+                        <input type="password" class="form-control" name="confirm_password" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">确认修改</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editToggle = document.getElementById('editToggle');
+    const formButtons = document.getElementById('formButtons');
+    const cancelEdit = document.getElementById('cancelEdit');
+    const profileFields = document.querySelectorAll('.profile-field');
+    const profileForm = document.getElementById('profileForm');
+    
+    let isEditing = false;
+    let originalValues = {};
+    
+    // 保存原始值
+    profileFields.forEach(field => {
+        originalValues[field.name] = field.value;
+    });
+    
+    // 切换编辑模式
+    editToggle.addEventListener('click', function() {
+        isEditing = !isEditing;
+        
+        if (isEditing) {
+            // 进入编辑模式
+            profileFields.forEach(field => {
+                if (field.name !== 'username') { // 用户名不可编辑
+                    field.removeAttribute('readonly');
+                    field.classList.add('border-primary');
+                }
+            });
+            editToggle.innerHTML = '<i class="fas fa-times me-1"></i>取消';
+            editToggle.className = 'btn btn-secondary btn-sm';
+            formButtons.style.display = 'block';
+        } else {
+            // 退出编辑模式
+            exitEditMode();
+        }
+    });
+    
+    // 取消编辑
+    cancelEdit.addEventListener('click', function() {
+        // 恢复原始值
+        profileFields.forEach(field => {
+            field.value = originalValues[field.name];
+        });
+        exitEditMode();
+    });
+    
+    function exitEditMode() {
+        isEditing = false;
+        profileFields.forEach(field => {
+            field.setAttribute('readonly', true);
+            field.classList.remove('border-primary');
+        });
+        editToggle.innerHTML = '<i class="fas fa-edit me-1"></i>编辑';
+        editToggle.className = 'btn btn-light btn-sm';
+        formButtons.style.display = 'none';
+    }
+    
+    // 表单提交
+    profileForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(profileForm);
+        
+        fetch(profileForm.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 更新原始值
+                profileFields.forEach(field => {
+                    originalValues[field.name] = field.value;
+                });
+                exitEditMode();
+                
+                // 显示成功消息
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
+            } else {
+                // 显示错误消息
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-danger alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-exclamation-triangle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>保存失败，请稍后重试
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
+        });
+    });
+    
+    // 修改密码表单
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    changePasswordForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const newPassword = this.new_password.value;
+        const confirmPassword = this.confirm_password.value;
+        
+        if (newPassword !== confirmPassword) {
+            alert('新密码和确认密码不匹配');
+            return;
+        }
+        
+        const formData = new FormData(changePasswordForm);
+        
+        fetch(changePasswordForm.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                changePasswordForm.reset();
+                
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-success alert-dismissible fade show';
+                alert.innerHTML = `
+                    <i class="fas fa-check-circle me-2"></i>${data.message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.querySelector('.container').insertBefore(alert, document.querySelector('.row'));
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('修改密码失败，请稍后重试');
+        });
+    });
+});
+</script>
+{% endblock %}

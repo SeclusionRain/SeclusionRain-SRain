@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+
+{% block title %}帮助中心 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 gap-8">
+    <!-- 帮助中心标题和搜索 -->
+    <div class="bg-white rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-question-circle text-primary mr-3"></i>
+            帮助中心
+        </h1>
+        <!-- 帮助内容导航 -->
+        <div class="flex overflow-x-auto pb-3 space-x-2 mb-8 -mx-6 px-6">
+            <button class="bg-primary text-white px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-sm">
+                全部问题
+            </button>
+            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-sm hover:bg-gray-200 transition-colors duration-200">
+                基础操作
+            </button>
+            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-sm hover:bg-gray-200 transition-colors duration-200">
+                爬虫功能
+            </button>
+            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-sm hover:bg-gray-200 transition-colors duration-200">
+                情感分析
+            </button>
+            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 text-sm hover:bg-gray-200 transition-colors duration-200">
+                数据分析
+            </button>
+        </div>
+        
+        <!-- 常见问题 -->
+        <div class="space-y-6">
+            <!-- 基础操作 -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">基础操作</h2>
+                <div class="space-y-3">
+                    <!-- FAQ 项 -->
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq1">
+                            <span class="font-medium text-gray-800">如何注册和登录系统？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq1" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                注册系统非常简单：点击页面右上角的"注册"按钮，填写用户名、邮箱和密码，点击"注册"即可完成。
+                                注册成功后，您可以使用注册的邮箱和密码登录系统。如果忘记密码，可以点击"忘记密码"链接，
+                                通过邮箱重置密码。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq2">
+                            <span class="font-medium text-gray-800">如何修改个人信息？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq2" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                登录系统后，点击页面右上角的用户头像，选择"个人信息"进入个人资料页面。
+                                在个人资料页面，您可以修改个人信息。
+                                请注意，用户名不可修改。修改完成后，点击"保存"按钮即可生效。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 爬虫功能 -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">爬虫功能</h2>
+                <div class="space-y-3">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq3">
+                            <span class="font-medium text-gray-800">如何抓取抖音评论？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq3" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                点击侧边栏的"爬虫"菜单进入爬虫页面。在爬虫页面，您可以选择输入抖音视频链接或视频ID，
+                                然后点击"开始爬取"按钮。系统会自动抓取该视频的评论数据。爬取完成后，您可以查看爬取的评论数据，
+                                并进行后续的情感分析。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq4">
+                            <span class="font-medium text-gray-800">爬虫爬取速度慢是什么原因？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq4" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                爬虫爬取速度受多种因素影响：
+                                <br>1. 目标网站的限制：为防止爬虫，抖音可能会限制访问频率
+                                <br>2. 网络状况：网络不稳定会影响爬取速度
+                                <br>3. 评论数量：评论数量越多，爬取时间越长
+                                <br>4. 服务器负载：系统负载高时，爬取速度可能会降低
+                                <br>
+                                建议您在网络状况良好的情况下进行爬取，对于评论数量较多的视频，可能需要较长时间，请耐心等待。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 情感分析 -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">情感分析</h2>
+                <div class="space-y-3">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq5">
+                            <span class="font-medium text-gray-800">如何进行情感分析？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq5" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                情感分析有两种方式：
+                                <br>1. 爬取完成后直接分析：在爬虫页面，爬取完成后点击"分析情感"按钮
+                                <br>2. 使用历史数据：点击侧边栏的"分析"菜单，选择已有的评论数据，点击"分析"按钮
+                                <br>
+                                系统会自动对评论数据进行情感分析，分析结果将以图表形式展示。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq6">
+                            <span class="font-medium text-gray-800">情感分析的准确率如何？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq6" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                我们的情感分析模型基于深度学习算法，经过大量抖音评论数据训练，准确率可达85%-90%。
+                                但需要注意的是，自然语言处理是一个复杂的任务，由于语言的歧义性、上下文的影响以及新词汇的不断出现，
+                                分析结果可能会存在一定误差。如果您发现分析结果不准确，可以通过系统反馈功能告诉我们，我们会不断优化模型。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- 数据分析 -->
+            <section>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">数据分析</h2>
+                <div class="space-y-3">
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq7">
+                            <span class="font-medium text-gray-800">如何查看分析结果？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq7" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                点击侧边栏的"可视化"菜单，选择要查看的分析任务。系统会以图表形式展示分析结果，包括：
+                                <br>1. 情感分布饼图：展示积极、消极、中性评论的比例
+                                <br>2. 情感趋势图：展示情感随时间的变化趋势
+                                <br>3. 关键词云：展示评论中出现频率较高的关键词
+                                <br>4. 评论示例：展示各类情感的评论示例
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-4 text-left focus:outline-none bg-white hover:bg-gray-50" data-target="faq8">
+                            <span class="font-medium text-gray-800">如何导出分析结果？</span>
+                            <i class="fas fa-chevron-down text-gray-400 transition-transform duration-200 faq-icon"></i>
+                        </button>
+                        <div id="faq8" class="faq-content px-4 pb-4 hidden">
+                            <p class="text-gray-600">
+                                在可视化页面，完成分析后，点击页面右上角的"导出"按钮。您可以选择导出为Excel、CSV或PDF格式。
+                                导出的内容包括原始评论数据、情感分析结果以及图表数据。请注意，导出功能仅对已登录用户开放。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- 联系支持 -->
+        <div class="mt-12 bg-blue-50 p-6 rounded-lg border border-blue-100">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-headset text-primary mr-2"></i>
+                还需要帮助？
+            </h2>
+            <p class="text-gray-600 mb-4">
+                如果您在使用过程中遇到问题，或者有任何建议，欢迎联系我们的客服团队。
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <a href="mailto:2833769669@qq.com" class="bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-envelope mr-2"></i>
+                    发送邮件
+                </a>
+                <a href="tel:18508039227" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors duration-200 flex items-center">
+                    <i class="fas fa-phone mr-2"></i>
+                    联系电话：18508039227
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    // 确保 DOM 完全加载后执行代码
+    document.addEventListener('DOMContentLoaded', function() {
+        // FAQ 切换功能 - 更可靠的实现
+        function setupFAQToggle() {
+            // 获取所有FAQ切换按钮
+            const toggleButtons = document.querySelectorAll('.faq-toggle');
+            
+            // 确保能找到按钮
+            if (toggleButtons.length === 0) {
+                console.log('未找到FAQ切换按钮');
+                return;
+            }
+            
+            // 为每个按钮添加点击事件
+            toggleButtons.forEach(function(toggle) {
+                // 直接绑定事件，避免箭头函数可能的作用域问题
+                toggle.onclick = function() {
+                    try {
+                        // 获取目标内容ID
+                        const targetId = this.getAttribute('data-target');
+                        if (!targetId) {
+                            console.error('按钮缺少data-target属性');
+                            return;
+                        }
+                        
+                        // 获取目标内容元素
+                        const content = document.getElementById(targetId);
+                        if (!content) {
+                            console.error('未找到ID为' + targetId + '的内容元素');
+                            return;
+                        }
+                        
+                        // 获取图标元素
+                        const icon = this.querySelector('.faq-icon');
+                        
+                        // 切换内容显示/隐藏
+                        if (content.classList.contains('hidden')) {
+                            // 显示内容
+                            content.classList.remove('hidden');
+                            // 旋转图标
+                            if (icon) {
+                                icon.style.transform = 'rotate(180deg)';
+                            }
+                        } else {
+                            // 隐藏内容
+                            content.classList.add('hidden');
+                            // 旋转图标
+                            if (icon) {
+                                icon.style.transform = 'rotate(0deg)';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('FAQ切换出错:', error);
+                    }
+                };
+            });
+        }
+        
+        // 分类按钮功能
+        function setupCategoryButtons() {
+            const categoryButtons = document.querySelectorAll('.flex.overflow-x-auto button');
+            
+            categoryButtons.forEach(function(button) {
+                button.onclick = function() {
+                    // 更新按钮样式
+                    categoryButtons.forEach(function(btn) {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-gray-100', 'text-gray-700');
+                    });
+                    
+                    this.classList.remove('bg-gray-100', 'text-gray-700');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // 获取按钮文本并筛选内容
+                    const category = this.textContent.trim();
+                    const sections = document.querySelectorAll('.space-y-6 > section');
+                    
+                    if (category === '全部问题') {
+                        // 显示所有部分
+                        sections.forEach(function(section) {
+                            section.style.display = 'block';
+                        });
+                    } else {
+                        // 根据分类筛选
+                        sections.forEach(function(section) {
+                            const sectionTitle = section.querySelector('h2').textContent.trim();
+                            if (sectionTitle === category) {
+                                section.style.display = 'block';
+                            } else {
+                                section.style.display = 'none';
+                            }
+                        });
+                    }
+                };
+            });
+        }
+        
+        // 初始化FAQ和分类功能
+        try {
+            setupFAQToggle();
+            setupCategoryButtons();
+            console.log('帮助中心交互功能已初始化');
+        } catch (error) {
+            console.error('帮助中心功能初始化失败:', error);
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}

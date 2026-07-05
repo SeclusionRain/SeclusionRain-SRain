@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - Sentiment AI{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const animateNumbers = () => {
+            const counters = document.querySelectorAll('.counter');
+            const speed = 200;
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const increment = target / speed;
+                let current = 0;
+                
+                const updateCount = () => {
+                    if (current < target) {
+                        current += increment;
+                        counter.innerText = Math.ceil(current).toLocaleString();
+                        setTimeout(updateCount, 10);
+                    } else {
+                        counter.innerText = target.toLocaleString();
+                    }
+                };
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            updateCount();
+                            observer.unobserve(counter);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                
+                observer.observe(counter);
+            });
+        };
+        
+        const featureCards = document.querySelectorAll('.feature-card');
+        featureCards.forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px)';
+                this.style.boxShadow = '0 12px 24px rgba(26, 58, 58, 0.12)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+            });
+        });
+        
+        animateNumbers();
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- 完全重新设计的英雄区域 - 高端极简风格 -->
+<div class="bg-gradient-primary text-white rounded-3xl shadow-elevated p-8 md:p-24 mb-20 relative overflow-hidden">
+    <!-- 背景装饰元素 -->
+    <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.4),transparent_70%)]"></div>
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full bg-white/30 blur-3xl animate-float"></div>
+        <div class="absolute bottom-1/3 right-1/3 w-96 h-96 rounded-full bg-white/20 blur-3xl animate-float" style="animation-delay: 1.5s;"></div>
+    </div>
+    
+    <div class="relative z-10">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-20">
+            <!-- 左侧内容 -->
+            <div class="lg:w-1/2">
+                <div class="mb-8 inline-block">
+                    <span class="bg-white/15 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-sm font-semibold border border-white/20 animate-fade-in-up">
+                        <i class="fas fa-sparkles mr-2"></i>抖音美妆视频评论情感分析
+                    </span>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-display font-bold mb-8 text-shadow-lg animate-fade-in-up leading-tight" style="animation-delay: 0.1s;">
+                    情感分析<br/>智能平台
+                </h1>
+                <p class="text-lg md:text-xl text-white/85 mb-12 animate-fade-in-up max-w-lg leading-relaxed" style="animation-delay: 0.2s;">
+                    基于先进AI技术的预测，机器学习的情感分析，深度洞察用户心声，助力业务决策
+                </p>
+                
+                <div class="flex flex-wrap gap-4 animate-fade-in-up" style="animation-delay: 0.3s;">
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('scraper.index') }}" class="bg-bg-100 text-accent-200 px-8 py-4 rounded-full hover:bg-bg-200 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center text-base">
+                        <i class="fas fa-spider mr-2"></i>开始爬取
+                    </a>
+                    <a href="{{ url_for('analysis.index') }}" class="bg-bg-100/15 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-full hover:bg-bg-100/25 transition-all duration-300 font-semibold flex items-center text-base">
+                        <i class="fas fa-brain mr-2"></i>情感分析
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="bg-bg-100 text-accent-200 px-8 py-4 rounded-full hover:bg-bg-200 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center text-base">
+                        <i class="fas fa-rocket mr-2"></i>立即开始
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 右侧视觉元素 -->
+            <div class="lg:w-1/2 flex justify-center relative">
+                <div class="absolute inset-0 bg-white/5 rounded-3xl blur-3xl animate-pulse"></div>
+                <div class="relative w-80 h-80 md:w-96 md:h-96 bg-white/8 backdrop-blur-md rounded-3xl border border-white/15 flex items-center justify-center shadow-elevated animate-scale-in">
+                    <div class="text-center">
+                        <i class="fas fa-comments text-9xl text-white/60 mb-6 block"></i>
+                        <div class="text-white/80 font-semibold text-lg">AI + 机器学习|护航你的情感分析</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重新设计的统计数据区域 - 高端卡片布局 -->
+<div class="bg-bg-100 rounded-3xl shadow-card p-8 md:p-20 mb-20 border border-bg-200/50">
+    <div class="text-center mb-16">
+        <h3 class="text-4xl md:text-5xl font-display font-bold text-gradient mb-4">
+            <i class="fas fa-chart-pie text-accent-200 mr-3"></i>平台数据概览
+        </h3>
+        <p class="text-text-200 text-lg max-w-2xl mx-auto">实时数据统计，展示平台规模和活跃度</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- 评论总数 -->
+        <div class="bg-gradient-soft rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-accent-200/8 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="flex items-center relative z-10">
+                <div class="bg-gradient-primary text-white p-5 rounded-2xl mr-6 group-hover:scale-110 transition-transform duration-300 shadow-md flex-shrink-0">
+                    <i class="fas fa-comments text-3xl"></i>
+                </div>
+                <div>
+                    <p class="text-text-200 text-sm font-medium mb-2">评论总数</p>
+                    <p class="text-4xl font-bold text-accent-200 counter" data-target="{{ total_comments }}">{{ total_comments | number_format }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分析任务 -->
+        <div class="bg-gradient-soft rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-primary-300/8 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="flex items-center relative z-10">
+                <div class="bg-gradient-secondary text-white p-5 rounded-2xl mr-6 group-hover:scale-110 transition-transform duration-300 shadow-md flex-shrink-0">
+                    <i class="fas fa-chart-line text-3xl"></i>
+                </div>
+                <div>
+                    <p class="text-text-200 text-sm font-medium mb-2">分析任务</p>
+                    <p class="text-4xl font-bold text-primary-300 counter" data-target="{{ total_analyses }}">{{ total_analyses | number_format }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 活跃用户 -->
+        <div class="bg-gradient-soft rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-40 h-40 bg-accent-100/8 rounded-full -mr-20 -mt-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="flex items-center relative z-10">
+                <div class="bg-gradient-accent text-white p-5 rounded-2xl mr-6 group-hover:scale-110 transition-transform duration-300 shadow-md flex-shrink-0">
+                    <i class="fas fa-users text-3xl"></i>
+                </div>
+                <div>
+                    <p class="text-text-200 text-sm font-medium mb-2">爬取任务</p>
+                    <p class="text-4xl font-bold text-accent-100 counter" data-target="{{ total_tasks }}">{{ total_tasks | number_format }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重新设计的功能特性区域 - 高端网格布局 -->
+<div class="mb-20">
+    <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-gradient mb-4">
+            <i class="fas fa-star text-primary-300 mr-3"></i>核心功能
+        </h2>
+        <p class="text-text-200 text-lg max-w-2xl mx-auto">强大的功能模块，助力您深度分析用户情感</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- 数据爬取 -->
+        <div class="feature-card bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-accent-200/5 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="relative z-10">
+                <div class="bg-gradient-primary text-white p-4 rounded-xl mb-6 w-fit group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-spider text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-100 mb-3">数据爬取</h3>
+                <p class="text-text-200 text-sm leading-relaxed">高效爬取抖音评论数据，支持多种过滤条件，实时更新数据库</p>
+            </div>
+        </div>
+        
+        <!-- 情感分析 -->
+        <div class="feature-card bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-primary-300/5 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="relative z-10">
+                <div class="bg-gradient-secondary text-white p-4 rounded-xl mb-6 w-fit group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-brain text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-100 mb-3">情感分析</h3>
+                <p class="text-text-200 text-sm leading-relaxed">基于深度学习的情感识别，准确判断正面、中立、负面情感</p>
+            </div>
+        </div>
+        
+        <!-- 数据可视化 -->
+        <div class="feature-card bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-accent-100/5 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="relative z-10">
+                <div class="bg-gradient-accent text-white p-4 rounded-xl mb-6 w-fit group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-chart-bar text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-100 mb-3">数据可视化</h3>
+                <p class="text-text-200 text-sm leading-relaxed">丰富的图表展示，直观呈现数据分析结果和趋势</p>
+            </div>
+        </div>
+        
+        <!-- AI 预测 -->
+        <div class="feature-card bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 group relative overflow-hidden card-premium">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-accent-200/5 rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="relative z-10">
+                <div class="bg-gradient-primary text-white p-4 rounded-xl mb-6 w-fit group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-wand-magic-sparkles text-2xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-text-100 mb-3">AI 预测</h3>
+                <p class="text-text-200 text-sm leading-relaxed">智能预测用户情感趋势，提前发现潜在问题</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 重新设计的技术栈区域 -->
+<div class="bg-bg-100 rounded-3xl shadow-card p-8 md:p-20 mb-20 border border-bg-200/50">
+    <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-gradient mb-4">
+            <i class="fas fa-code text-accent-200 mr-3"></i>技术栈
+        </h2>
+        <p class="text-text-200 text-lg">采用业界领先的技术方案</p>
+    </div>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="bg-gradient-soft rounded-2xl p-8 border border-bg-200/50 text-center group hover:shadow-card transition-all duration-300">
+            <i class="fas fa-python text-4xl text-accent-200 mb-4 block group-hover:scale-110 transition-transform duration-300"></i>
+            <p class="font-semibold text-text-100">Python</p>
+            <p class="text-text-200 text-sm mt-1">核心编程语言</p>
+        </div>
+        
+        <div class="bg-gradient-soft rounded-2xl p-8 border border-bg-200/50 text-center group hover:shadow-card transition-all duration-300">
+            <i class="fas fa-database text-4xl text-primary-300 mb-4 block group-hover:scale-110 transition-transform duration-300"></i>
+            <p class="font-semibold text-text-100">MySQL+Hive</p>
+            <p class="text-text-200 text-sm mt-1">数据存储</p>
+        </div>
+        
+        <div class="bg-gradient-soft rounded-2xl p-8 border border-bg-200/50 text-center group hover:shadow-card transition-all duration-300">
+            <i class="fas fa-brain text-4xl text-accent-100 mb-4 block group-hover:scale-110 transition-transform duration-300"></i>
+            <p class="font-semibold text-text-100">机器学习</p>
+            <p class="text-text-200 text-sm mt-1">情感分析核心</p>
+        </div>
+        
+        <div class="bg-gradient-soft rounded-2xl p-8 border border-bg-200/50 text-center group hover:shadow-card transition-all duration-300">
+            <i class="fas fa-chart-line text-4xl text-accent-200 mb-4 block group-hover:scale-110 transition-transform duration-300"></i>
+            <p class="font-semibold text-text-100">ECharts</p>
+            <p class="text-text-200 text-sm mt-1">数据可视化</p>
+        </div>
+    </div>
+</div>
+
+<!-- 重新设计的使用指南区域 -->
+<div class="mb-20">
+    <div class="text-center mb-16">
+        <h2 class="text-4xl md:text-5xl font-display font-bold text-gradient mb-4">
+            <i class="fas fa-book text-primary-300 mr-3"></i>快速开始
+        </h2>
+        <p class="text-text-200 text-lg">三步开始您的情感分析之旅</p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 relative">
+            <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-primary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">1</div>
+            <h3 class="text-xl font-semibold text-text-100 mb-4 mt-4">登录账户</h3>
+            <p class="text-text-200 leading-relaxed">创建或登录您的账户，获得完整的平台访问权限</p>
+        </div>
+        
+        <div class="bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 relative">
+            <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-secondary text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">2</div>
+            <h3 class="text-xl font-semibold text-text-100 mb-4 mt-4">爬取数据</h3>
+            <p class="text-text-200 leading-relaxed">输入关键词或视频链接，开始爬取评论数据</p>
+        </div>
+        
+        <div class="bg-bg-100 rounded-2xl shadow-card p-8 border border-bg-200/50 relative">
+            <div class="absolute -top-4 -left-4 w-12 h-12 bg-gradient-accent text-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg">3</div>
+            <h3 class="text-xl font-semibold text-text-100 mb-4 mt-4">分析结果</h3>
+            <p class="text-text-200 leading-relaxed">查看详细的情感分析结果和可视化报告</p>
+        </div>
+    </div>
+</div>
+
+<!-- 重新设计的行动号召区域 -->
+{% if not current_user.is_authenticated %}
+<div class="bg-gradient-primary text-white rounded-3xl shadow-elevated p-12 md:p-20 text-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-5">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent_70%)]"></div>
+    </div>
+    
+    <div class="relative z-10">
+        <h2 class="text-4xl md:text-5xl font-display font-bold mb-6 text-shadow-lg">准备好开始了吗？</h2>
+        <p class="text-lg text-white/85 mb-10 max-w-2xl mx-auto">加入数千名用户，体验高端的情感分析平台</p>
+        
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{{ url_for('auth.register') }}" class="bg-bg-100 text-accent-200 px-8 py-4 rounded-full hover:bg-bg-200 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-flex items-center justify-center">
+                <i class="fas fa-user-plus mr-2"></i>立即注册
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="bg-bg-100/15 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-full hover:bg-bg-100/25 transition-all duration-300 font-semibold inline-flex items-center justify-center">
+                <i class="fas fa-sign-in-alt mr-2"></i>登录账户
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

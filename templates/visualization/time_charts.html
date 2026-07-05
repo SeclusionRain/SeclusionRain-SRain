@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}时间情感分析 - 抖音美妆视频评论情感分析系统{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-6">
+    <!-- 页面标题和返回按钮 -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 animate-fade-in">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">
+            <i class="fas fa-clock text-blue-500 me-2"></i>时间情感倾向分析
+        </h2>
+        <a href="{{ url_for('visualization.view_charts', history_id=history.id) }}" 
+           class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-4 py-2 rounded-lg transition-all duration-300 flex items-center shadow-sm hover:shadow">
+            <i class="fas fa-arrow-left mr-1"></i>返回仪表板
+        </a>
+    </div>
+
+    <!-- 图表区域 - 使用 Tailwind 的 grid 布局 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- 1. 日期情感趋势线图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-right">
+            <div class="bg-gradient-to-r from-indigo-500 to-indigo-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-chart-line me-2"></i>日期情感趋势
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="dailyTrendChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="dailyTrendChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 2. 24 小时情感分布雷达图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-left">
+            <div class="bg-gradient-to-r from-blue-400 to-blue-500 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-clock me-2"></i>24 小时情感分布
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="hourlyRadarChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="hourlyRadarChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 3. 时间段对比柱状图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-right">
+            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-sun me-2"></i>时间段情感对比
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="periodBarChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="periodBarChart" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- 4. 日期活跃度热力图 -->
+        <div class="rounded-xl shadow-lg overflow-hidden bg-white hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 animate-slide-in-left">
+            <div class="bg-gradient-to-r from-green-500 to-green-600 px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <h5 class="text-white font-medium flex items-center">
+                        <i class="fas fa-calendar me-2"></i>日期活跃度热力图
+                    </h5>
+                    <button class="export-btn bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition-all duration-300 text-sm" data-chart="dateHeatmapChart">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-4">
+                <div id="dateHeatmapChart" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 时间分析洞察 -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in">
+        <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+            <h5 class="text-gray-800 font-semibold flex items-center">
+                <i class="fas fa-lightbulb text-yellow-500 me-2"></i>时间分析洞察
+            </h5>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="timeInsightCards">
+                <!-- 动态生成洞察卡片 -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const historyId = {{ history.id }};
+    
+    // 初始化图表
+    const dailyTrendChart = echarts.init(document.getElementById('dailyTrendChart'));
+    const hourlyRadarChart = echarts.init(document.getElementById('hourlyRadarChart'));
+    const periodBarChart = echarts.init(document.getElementById('periodBarChart'));
+    const dateHeatmapChart = echarts.init(document.getElementById('dateHeatmapChart'));
+    
+    // 加载时间情感数据
+    fetch(`/visualization/api/time_sentiment/${historyId}`)
+        .then(response => response.json())
+        .then(data => {
+            const hourlyStats = data.hourly_stats;
+            const dailyStats = data.daily_stats;
+            const periodStats = data.period_stats;
+            
+            // 1. 日期趋势线图
+            const dates = Object.keys(dailyStats).sort();
+            const dailyPositive = dates.map(date => dailyStats[date].positive);
+            const dailyNegative = dates.map(date => dailyStats[date].negative);
+            
+            const dailyOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross'
+                    }
+                },
+                legend: {
+                    data: ['正面评论', '负面评论']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dates,
+                    axisLabel: {
+                        rotate: 45
+                    }
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: '正面评论',
+                        type: 'line',
+                        data: dailyPositive,
+                        itemStyle: { color: '#28a745' },
+                        smooth: true
+                    },
+                    {
+                        name: '负面评论',
+                        type: 'line',
+                        data: dailyNegative,
+                        itemStyle: { color: '#dc3545' },
+                        smooth: true
+                    }
+                ]
+            };
+            dailyTrendChart.setOption(dailyOption);
+            
+            // 2. 24小时雷达图
+            const hours = Array.from({length: 24}, (_, i) => i);
+            const hourlyPositive = hours.map(hour => hourlyStats[hour] ? hourlyStats[hour].positive : 0);
+            const hourlyNegative = hours.map(hour => hourlyStats[hour] ? hourlyStats[hour].negative : 0);
+            
+            const radarOption = {
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    data: ['正面评论', '负面评论']
+                },
+                radar: {
+                    indicator: hours.map(hour => ({
+                        name: hour + '时',
+                        max: Math.max(...hourlyPositive, ...hourlyNegative) || 10
+                    }))
+                },
+                series: [{
+                    name: '24小时情感分布',
+                    type: 'radar',
+                    data: [
+                        {
+                            value: hourlyPositive,
+                            name: '正面评论',
+                            itemStyle: { color: '#28a745' }
+                        },
+                        {
+                            value: hourlyNegative,
+                            name: '负面评论',
+                            itemStyle: { color: '#dc3545' }
+                        }
+                    ]
+                }]
+            };
+            hourlyRadarChart.setOption(radarOption);
+            
+            // 3. 时间段柱状图
+            const periods = ['morning', 'afternoon', 'evening', 'night'];
+            const periodNames = ['上午(6-12)', '下午(12-18)', '傍晚(18-22)', '夜晚(22-6)'];
+            
+            const periodOption = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['正面评论', '负面评论']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: periodNames
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: '正面评论',
+                        type: 'bar',
+                        data: periods.map(period => periodStats[period].positive),
+                        itemStyle: { color: '#28a745' }
+                    },
+                    {
+                        name: '负面评论',
+                        type: 'bar',
+                        data: periods.map(period => periodStats[period].negative),
+                        itemStyle: { color: '#dc3545' }
+                    }
+                ]
+            };
+            periodBarChart.setOption(periodOption);
+            
+            // 4. 日期热力图
+            const heatmapData = dates.map(date => {
+                const stats = dailyStats[date];
+                const total = stats.positive + stats.negative;
+                const positiveRate = total > 0 ? (stats.positive / total) : 0.5;
+                return [date, positiveRate, total];
+            });
+            
+            const heatmapOption = {
+                tooltip: {
+                    formatter: function(params) {
+                        const data = params.data;
+                        return `日期: ${data[0]}<br/>正面率: ${(data[1] * 100).toFixed(1)}%<br/>总评论: ${data[2]}条`;
+                    }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 50,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '10%',
+                    inRange: {
+                        color: ['#dc3545', '#ffc107', '#28a745']
+                    },
+                    text: ['高评论', '低评论']
+                },
+                calendar: {
+                    top: 60,
+                    left: 30,
+                    right: 30,
+                    cellSize: ['auto', 20],
+                    range: dates.length > 0 ? [dates[0], dates[dates.length - 1]] : '2024',
+                    itemStyle: {
+                        borderWidth: 0.5
+                    },
+                    yearLabel: { show: false }
+                },
+                series: [{
+                    type: 'heatmap',
+                    coordinateSystem: 'calendar',
+                    data: heatmapData.map(item => [item[0], item[1], item[2]])
+                }]
+            };
+            dateHeatmapChart.setOption(heatmapOption);
+            
+            // 生成时间分析洞察
+            generateTimeInsights(hourlyStats, dailyStats, periodStats);
+        })
+        .catch(error => {
+            console.error('加载时间数据失败:', error);
+        });
+    
+    // 生成时间分析洞察
+    function generateTimeInsights(hourlyStats, dailyStats, periodStats) {
+        const insights = [];
+        
+        // 最活跃时间段分析
+        const periods = ['morning', 'afternoon', 'evening', 'night'];
+        const periodNames = ['上午', '下午', '傍晚', '夜晚'];
+        const periodTotals = periods.map(period => 
+            periodStats[period].positive + periodStats[period].negative
+        );
+        const maxPeriodIndex = periodTotals.indexOf(Math.max(...periodTotals));
+        
+        if (periodTotals[maxPeriodIndex] > 0) {
+            insights.push({
+                icon: 'fas fa-fire',
+                color: 'primary',
+                title: '最活跃时段',
+                content: `${periodNames[maxPeriodIndex]}是评论最活跃的时段，共有${periodTotals[maxPeriodIndex]}条评论`
+            });
+        }
+        
+        // 最正面时间段
+        const periodPositiveRates = periods.map(period => {
+            const total = periodStats[period].positive + periodStats[period].negative;
+            return total > 0 ? (periodStats[period].positive / total * 100) : 0;
+        });
+        const maxPositiveIndex = periodPositiveRates.indexOf(Math.max(...periodPositiveRates));
+        
+        if (periodPositiveRates[maxPositiveIndex] > 0) {
+            insights.push({
+                icon: 'fas fa-smile',
+                color: 'success',
+                title: '最正面时段',
+                content: `${periodNames[maxPositiveIndex]}时段的正面率最高，达到${periodPositiveRates[maxPositiveIndex].toFixed(1)}%`
+            });
+        }
+        
+        // 评论时间分布特征
+        const hours = Object.keys(hourlyStats).map(Number).sort((a, b) => a - b);
+        if (hours.length > 0) {
+            const peakHours = hours.filter(hour => {
+                const total = hourlyStats[hour].positive + hourlyStats[hour].negative;
+                return total >= Math.max(...hours.map(h => 
+                    hourlyStats[h].positive + hourlyStats[h].negative
+                )) * 0.8;
+            });
+            
+            if (peakHours.length > 0) {
+                insights.push({
+                    icon: 'fas fa-clock',
+                    color: 'info',
+                    title: '高峰时段',
+                    content: `${peakHours.join('点、')}点是评论发布的高峰时段`
+                });
+            }
+        }
+        
+        // 日期趋势分析
+        const dates = Object.keys(dailyStats).sort();
+        if (dates.length >= 2) {
+            const firstDay = dailyStats[dates[0]];
+            const lastDay = dailyStats[dates[dates.length - 1]];
+            const firstTotal = firstDay.positive + firstDay.negative;
+            const lastTotal = lastDay.positive + lastDay.negative;
+            
+            if (firstTotal > 0 && lastTotal > 0) {
+                const trend = lastTotal > firstTotal ? '上升' : '下降';
+                const change = Math.abs(((lastTotal - firstTotal) / firstTotal * 100));
+                
+                insights.push({
+                    icon: trend === '上升' ? 'fas fa-arrow-up' : 'fas fa-arrow-down',
+                    color: trend === '上升' ? 'success' : 'warning',
+                    title: '评论趋势',
+                    content: `评论数量呈${trend}趋势，变化幅度为${change.toFixed(1)}%`
+                });
+            }
+        }
+        
+        // 渲染洞察卡片 - 使用Tailwind CSS样式
+        const insightCards = document.getElementById('timeInsightCards');
+        insightCards.innerHTML = insights.map((insight, index) => {
+            // 映射Bootstrap颜色到Tailwind颜色
+            const colorMap = {
+                'primary': 'indigo',
+                'success': 'green',
+                'info': 'blue',
+                'warning': 'yellow',
+                'secondary': 'gray'
+            };
+            const tailwindColor = colorMap[insight.color] || 'blue';
+            
+            // 为每个卡片添加不同的动画延迟
+            const animationDelay = `${index * 150}ms`;
+            
+            return `
+                <div class="bg-white rounded-lg shadow-md p-4 border-l-4" 
+                     style="border-color: var(--tw-color-${tailwindColor}-500); 
+                            animation: fadeInUp 0.5s ease-out forwards; 
+                            animation-delay: ${animationDelay}; 
+                            opacity: 0;">
+                    <div class="flex flex-col items-center text-center">
+                        <i class="${insight.icon} text-2xl mb-2" 
+                           style="color: var(--tw-color-${tailwindColor}-500);"></i>
+                        <h6 class="font-semibold mb-1 text-gray-800">${insight.title}</h6>
+                        <p class="text-sm text-gray-600">${insight.content}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        dailyTrendChart.resize();
+        hourlyRadarChart.resize();
+        periodBarChart.resize();
+        dateHeatmapChart.resize();
+    });
+    
+    // 导出图表功能
+    document.querySelectorAll('.export-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const chartName = this.getAttribute('data-chart');
+            let chart;
+            
+            switch(chartName) {
+                case 'dailyTrendChart':
+                    chart = dailyTrendChart;
+                    break;
+                case 'hourlyRadarChart':
+                    chart = hourlyRadarChart;
+                    break;
+                case 'periodBarChart':
+                    chart = periodBarChart;
+                    break;
+                case 'dateHeatmapChart':
+                    chart = dateHeatmapChart;
+                    break;
+            }
+            
+            if (chart) {
+                try {
+                    const chartImg = chart.getDataURL({
+                        type: 'png',
+                        pixelRatio: 2,
+                        backgroundColor: '#fff'
+                    });
+                    
+                    const link = document.createElement('a');
+                    link.download = `时间分析_${chartName}_${new Date().getTime()}.png`;
+                    link.href = chartImg;
+                    link.click();
+                    
+                    showToast('图片导出成功！', 'success');
+                } catch (error) {
+                    console.error('导出失败:', error);
+                    showToast('导出失败，请重试', 'error');
+                }
+            }
+        });
+    });
+    
+    // 显示提示消息
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white z-50 transform transition-all duration-300 translate-y-[-100%] opacity-0`;
+        const colors = {
+            'success': '#28a745',
+            'error': '#dc3545',
+            'info': '#007bff'
+        };
+        toast.style.backgroundColor = colors[type] || colors['info'];
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+                ${message}
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.classList.remove('translate-y-[-100%]', 'opacity-0');
+        }, 10);
+        
+        setTimeout(() => {
+            toast.classList.add('translate-y-[-100%]', 'opacity-0');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}
