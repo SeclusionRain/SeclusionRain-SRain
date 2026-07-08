@@ -5,7 +5,7 @@ from typing import List, Dict, Optional
 class GLM_AI:
     """A wrapper class for the ZhipuAI API to provide chat functionalities."""
 
-    def __init__(self, api_key: str = "6e5c64b5def14289a42299b6d6bf9b25.hsfmUcWHCjfxk9J9", model: str = "glm-4.6"):
+    def __init__(self, api_key: str = "", model: str = "glm-4.6"):
         """
         Initializes the ZhipuAI client.
 
