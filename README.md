@@ -239,7 +239,7 @@ ping open.bigmodel.cn
 pip show zai-sdk
 # 应为 0.0.3 版本
 
-
+最重要：请自行获取你的抖音cookie并且复制到/datasets/DouyinDataset/cookie.txt中
 七、环境检查清单
 ================================================================================
 
